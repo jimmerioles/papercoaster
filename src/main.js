@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Track } from './track.js';
+import { createTestTrack } from './track.js';
 import { World } from './world.js';
 import { Ride } from './ride.js';
 import './style.css';
@@ -25,7 +25,7 @@ scene.fog = new THREE.FogExp2(0xffd3a3, 0.0015);
 const camera = new THREE.PerspectiveCamera(68, window.innerWidth / window.innerHeight, 0.1, 3000);
 
 const world = new World(scene);
-const track = new Track();
+const track = createTestTrack();
 scene.add(track.mesh);
 const ride = new Ride(track, camera);
 

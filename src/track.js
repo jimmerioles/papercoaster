@@ -1,6 +1,42 @@
 import * as THREE from 'three';
 
-const TRACK_WIDTH = 2.6;
+export const TRACK_WIDTH = 2.6;
+export const START_BAND_START = 0.035;
+export const START_BAND_END = 0.0375;
+
+export const TEST_TRACK_POINTS = [
+  [0, 42, -16],
+  [0, 42, 0],
+  [0, 40, 12],
+  [0, 24, 24],
+  [0, 14, 34],
+  [0, 6, 52],
+  [0, 8, 66],
+  [0, 10, 76],
+  [0, 18, 86],
+  [0, 30, 90],
+  [0, 38, 78],
+  [0, 30, 68],
+  [0, 18, 70],
+  [0, 10, 80],
+  [0, 14, 94],
+  [8, 18, 106],
+  [20, 22, 114],
+  [34, 26, 116],
+  [48, 24, 110],
+  [60, 18, 100],
+];
+
+function toVector3(point) {
+  if (point instanceof THREE.Vector3) return point.clone();
+  if (Array.isArray(point) && point.length === 3) {
+    return new THREE.Vector3(point[0], point[1], point[2]);
+  }
+  if (point && Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z)) {
+    return new THREE.Vector3(point.x, point.y, point.z);
+  }
+  throw new TypeError('Track points must be Vector3 values or [x, y, z] arrays.');
+}
 
 function makePaperTexture() {
   const size = 256;
@@ -42,35 +78,17 @@ function makePaperTexture() {
 }
 
 export class Track {
-  constructor() {
-    this.points = [
-      new THREE.Vector3(0, 42, -16),
-      new THREE.Vector3(0, 42, 0),
-      new THREE.Vector3(0, 40, 12),
-      new THREE.Vector3(0, 24, 24),
-      new THREE.Vector3(0, 14, 34),
-      new THREE.Vector3(0, 6, 52),
-      new THREE.Vector3(0, 8, 66),
-      new THREE.Vector3(0, 10, 76),
-      new THREE.Vector3(0, 18, 86),
-      new THREE.Vector3(0, 30, 90),
-      new THREE.Vector3(0, 38, 78),
-      new THREE.Vector3(0, 30, 68),
-      new THREE.Vector3(0, 18, 70),
-      new THREE.Vector3(0, 10, 80),
-      new THREE.Vector3(0, 14, 94),
-      new THREE.Vector3(8, 18, 106),
-      new THREE.Vector3(20, 22, 114),
-      new THREE.Vector3(34, 26, 116),
-      new THREE.Vector3(48, 24, 110),
-      new THREE.Vector3(60, 18, 100),
-    ];
+  constructor(points) {
+    if (!Array.isArray(points) || points.length < 2) {
+      throw new TypeError('Track needs at least two points.');
+    }
 
+    this.points = points.map(toVector3);
     this.curve = new THREE.CatmullRomCurve3(this.points, false, 'centripetal', 0.5);
     this.curve.arcLengthDivisions = 4000;
     this.curve.updateArcLengths();
     this.length = this.curve.getLength();
-    this.samples = 1800;
+    this.samples = THREE.MathUtils.clamp(Math.ceil(this.length * 8), 240, 1800);
     this.frames = this._computeFrames(this.samples);
     this.mesh = this._buildMesh();
   }
@@ -301,8 +319,8 @@ export class Track {
     group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(leftRail), railMaterial));
     group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(rightRail), railMaterial));
 
-    const startA = this.getFrameAt(0.035);
-    const startB = this.getFrameAt(0.0375);
+    const startA = this.getFrameAt(START_BAND_START);
+    const startB = this.getFrameAt(START_BAND_END);
     const aLeft = startA.position
       .clone()
       .addScaledVector(startA.right, -halfWidth)
@@ -351,4 +369,34 @@ export class Track {
 
     return group;
   }
+
+  dispose() {
+    const geometries = new Set();
+    const materials = new Set();
+
+    this.mesh.traverse((child) => {
+      if (child.geometry) geometries.add(child.geometry);
+      if (child.material) {
+        const list = Array.isArray(child.material) ? child.material : [child.material];
+        for (const material of list) materials.add(material);
+      }
+    });
+
+    for (const material of materials) {
+      for (const key of ['map', 'alphaMap', 'normalMap', 'roughnessMap', 'metalnessMap']) {
+        if (material[key]) {
+          material[key].dispose();
+          material[key] = null;
+        }
+      }
+      material.dispose();
+    }
+    for (const geometry of geometries) geometry.dispose();
+
+    this.mesh.clear();
+  }
+}
+
+export function createTestTrack() {
+  return new Track(TEST_TRACK_POINTS);
 }
