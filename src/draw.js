@@ -38,7 +38,11 @@ export class DrawScreen {
 
   close() {
     this.active = false;
+    const pointerId = this.pointerId;
     this.pointerId = null;
+    if (pointerId !== null && this.canvas.hasPointerCapture(pointerId)) {
+      this.canvas.releasePointerCapture(pointerId);
+    }
   }
 
   clear({ notify = true } = {}) {

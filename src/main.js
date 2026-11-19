@@ -85,12 +85,17 @@ function setState(next) {
 
   if (wasDrawing && !drawing) {
     drawScreen.close();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   }
 
   ui.startScreen.classList.toggle('hidden', state !== 'idle');
+  ui.startScreen.setAttribute('aria-hidden', String(state !== 'idle'));
   ui.drawScreen.classList.toggle('hidden', !drawing);
   ui.drawScreen.setAttribute('aria-hidden', String(!drawing));
   ui.endScreen.classList.toggle('hidden', !done);
+  ui.endScreen.setAttribute('aria-hidden', String(!done));
   ui.hud.classList.toggle('hidden', !riding);
   ui.hud.setAttribute('aria-hidden', String(!riding));
   ui.muteButton.classList.toggle('hidden', !(riding || done));
@@ -159,7 +164,12 @@ function rideDrawnTrack() {
     nextTrack = new Track(lastStroke.points);
   } catch (error) {
     console.error(error);
+    lastStroke = null;
+    drawScreen.clear({ notify: false });
+    ui.clearButton.disabled = true;
+    ui.rideDrawnButton.disabled = true;
     ui.drawStatus.textContent = 'That line could not become a track. Draw it again.';
+    setState('draw');
     return;
   }
 
