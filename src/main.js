@@ -1,7 +1,9 @@
 import * as THREE from 'three';
-import { Track } from './track.js';
+import { Track, createTestTrack } from './track.js';
 import { World } from './world.js';
 import { Ride } from './ride.js';
+import { DrawScreen } from './draw.js';
+import { describeStrokeError } from './stroke.js';
 import './style.css';
 
 const app = document.querySelector('#app');
@@ -25,8 +27,9 @@ scene.fog = new THREE.FogExp2(0xffd3a3, 0.0015);
 const camera = new THREE.PerspectiveCamera(68, window.innerWidth / window.innerHeight, 0.1, 3000);
 
 const world = new World(scene);
-const track = new Track();
+let track = createTestTrack();
 scene.add(track.mesh);
+world.placeStartFlag(track);
 const ride = new Ride(track, camera);
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -35,48 +38,113 @@ reducedMotion.addEventListener('change', (event) => {
   ride.comfort = event.matches;
 });
 
-const params = new URLSearchParams(window.location.search);
-const rawFreeze = params.get('t');
-const parsedFreeze = rawFreeze === null ? null : parseFloat(rawFreeze);
-const freezeT =
-  parsedFreeze !== null && Number.isFinite(parsedFreeze)
-    ? THREE.MathUtils.clamp(parsedFreeze, 0, 1)
-    : null;
+function readFreezeT() {
+  const raw = new URLSearchParams(window.location.search).get('t');
+  if (raw === null) return null;
+  const parsed = parseFloat(raw);
+  return Number.isFinite(parsed) ? THREE.MathUtils.clamp(parsed, 0, 1) : null;
+}
+
+const freezeT = readFreezeT();
 
 const ui = {
   startScreen: document.querySelector('#start-screen'),
+  drawScreen: document.querySelector('#draw-screen'),
   endScreen: document.querySelector('#end-screen'),
   hud: document.querySelector('#hud'),
   startButton: document.querySelector('#start-button'),
+  drawCanvas: document.querySelector('#draw-canvas'),
+  clearButton: document.querySelector('#clear-button'),
+  rideDrawnButton: document.querySelector('#ride-drawn-button'),
+  drawStatus: document.querySelector('#draw-status'),
+  redrawButton: document.querySelector('#redraw-button'),
   againButton: document.querySelector('#again-button'),
   speedValue: document.querySelector('#speed-value'),
   maxSpeed: document.querySelector('#max-speed'),
+  trackLength: document.querySelector('#track-length'),
   progressFill: document.querySelector('#progress-fill'),
   muteButton: document.querySelector('#mute-button'),
   muteIcon: document.querySelector('#mute-icon'),
 };
 
 let state = 'idle';
+let lastStroke = null;
 let audio = null;
 let audioClock = 0;
 let muted = false;
 
+const drawScreen = new DrawScreen(ui.drawCanvas, { onChange: handleStrokeChange });
+
 function setState(next) {
+  const wasDrawing = state === 'draw' || state === 'drawn';
   state = next;
 
+  const drawing = state === 'draw' || state === 'drawn';
   const riding = state === 'riding';
   const done = state === 'done';
 
+  if (wasDrawing && !drawing) {
+    drawScreen.close();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  }
+
   ui.startScreen.classList.toggle('hidden', state !== 'idle');
+  ui.startScreen.setAttribute('aria-hidden', String(state !== 'idle'));
+  ui.drawScreen.classList.toggle('hidden', !drawing);
+  ui.drawScreen.setAttribute('aria-hidden', String(!drawing));
   ui.endScreen.classList.toggle('hidden', !done);
+  ui.endScreen.setAttribute('aria-hidden', String(!done));
   ui.hud.classList.toggle('hidden', !riding);
   ui.hud.setAttribute('aria-hidden', String(!riding));
-  ui.muteButton.classList.toggle('hidden', state === 'idle' || state === 'frozen');
+  ui.muteButton.classList.toggle('hidden', !(riding || done));
+
+  if (drawing && !wasDrawing) {
+    requestAnimationFrame(() => {
+      if (state === 'draw' || state === 'drawn') ui.drawScreen.focus();
+    });
+  }
 
   if (done) {
     ui.maxSpeed.textContent = Math.round(ride.maxSpeed * 3.6);
+    ui.trackLength.textContent = Math.round(track.length);
     fadeAudioOut();
+    requestAnimationFrame(() => {
+      if (state === 'done') ui.againButton.focus();
+    });
   }
+}
+
+function handleStrokeChange(result) {
+  if (state !== 'draw' && state !== 'drawn') return;
+
+  if (result.ok) {
+    lastStroke = result;
+    ui.clearButton.disabled = false;
+    ui.rideDrawnButton.disabled = false;
+    ui.drawStatus.textContent = `${Math.round(result.length)} m of track. Ready when you are.`;
+    setState('drawn');
+    return;
+  }
+
+  lastStroke = null;
+  ui.clearButton.disabled = !result.hasStroke;
+  ui.rideDrawnButton.disabled = true;
+  const message = result.reason ? describeStrokeError(result.reason) : '';
+  ui.drawStatus.textContent =
+    result.hasStroke && message ? `${message} Clear to try again.` : message;
+  setState('draw');
+}
+
+function openDrawScreen() {
+  drawScreen.open();
+  lastStroke = null;
+  ui.clearButton.disabled = true;
+  ui.rideDrawnButton.disabled = true;
+  ui.drawStatus.textContent = '';
+  fadeAudioOut();
+  setState('draw');
 }
 
 function startRide() {
@@ -90,7 +158,46 @@ function startRide() {
   startAudio();
 }
 
-ui.startButton.addEventListener('click', startRide);
+function rideDrawnTrack() {
+  if (!lastStroke?.ok) return;
+
+  let nextTrack;
+  try {
+    nextTrack = new Track(lastStroke.points);
+  } catch (error) {
+    console.error(error);
+    lastStroke = null;
+    drawScreen.clear({ notify: false });
+    ui.clearButton.disabled = true;
+    ui.rideDrawnButton.disabled = true;
+    ui.drawStatus.textContent = 'That line could not become a track. Draw it again.';
+    setState('draw');
+    return;
+  }
+
+  scene.remove(track.mesh);
+  track.dispose();
+  track = nextTrack;
+  scene.add(track.mesh);
+  world.placeStartFlag(track);
+  ride.track = track;
+
+  const drawnFreeze = readFreezeT();
+  if (drawnFreeze !== null) {
+    ride.freezeAt(drawnFreeze);
+    setState('frozen');
+  } else {
+    startRide();
+  }
+}
+
+ui.startButton.addEventListener('click', openDrawScreen);
+ui.rideDrawnButton.addEventListener('click', rideDrawnTrack);
+ui.clearButton.addEventListener('click', () => {
+  drawScreen.clear();
+  ui.drawScreen.focus();
+});
+ui.redrawButton.addEventListener('click', openDrawScreen);
 ui.againButton.addEventListener('click', startRide);
 
 window.addEventListener('keydown', (event) => {
@@ -170,6 +277,7 @@ function fadeAudioOut() {
 ui.muteButton.addEventListener('click', () => {
   muted = !muted;
   ui.muteIcon.textContent = muted ? 'Sound off' : 'Sound on';
+  ui.muteButton.setAttribute('aria-pressed', String(muted));
 
   if (muted) {
     if (audio) {
@@ -217,8 +325,10 @@ function tick() {
     ride.idle(dt);
   }
 
-  world.update(dt, camera);
-  renderer.render(scene, camera);
+  if (state !== 'draw' && state !== 'drawn') {
+    world.update(dt, camera);
+    renderer.render(scene, camera);
+  }
 }
 
 tick();

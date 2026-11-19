@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f6c9a8" />
     <meta name="color-scheme" content="light" />
-    <meta name="description" content="Papercoaster: draw a line, ride it. A three.js feel test." />
+    <meta
+      name="description"
+      content="Papercoaster: draw a line, ride it. Turn one stroke into a paper rollercoaster."
+    />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Papercoaster" />
     <meta property="og:title" content="Papercoaster" />
     <meta
       property="og:description"
-      content="Draw a line. Ride it. A three.js papercoaster feel test."
+      content="Draw a line. Ride it. Turn one stroke into a paper rollercoaster."
     />
     <meta property="og:url" content="https://jimmerioles.github.io/papercoaster/" />
     <meta property="og:image" content="https://jimmerioles.github.io/papercoaster/og.jpg" />
@@ -40,13 +43,46 @@
       <div class="vignette" aria-hidden="true"></div>
       <div class="grain" aria-hidden="true"></div>
 
-      <section id="start-screen" class="screen">
+      <section id="start-screen" class="screen" aria-hidden="false">
         <div class="card">
-          <p class="eyebrow">A three.js feel test</p>
+          <p class="eyebrow">A three.js paper coaster</p>
           <h1>Papercoaster</h1>
           <p class="tagline">Draw a line. Ride it.</p>
-          <button id="start-button" type="button">Ride the test track</button>
-          <p class="note">Fixed track. The drawing comes next.</p>
+          <button id="start-button" class="primary-button" type="button">Draw a line</button>
+          <p class="note">One stroke becomes the track. No two lines the same.</p>
+        </div>
+      </section>
+
+      <section
+        id="draw-screen"
+        class="screen draw-screen hidden"
+        aria-labelledby="draw-title"
+        aria-hidden="true"
+        tabindex="-1"
+      >
+        <canvas
+          id="draw-canvas"
+          aria-label="Drawing paper for one continuous coaster line"
+        ></canvas>
+        <div class="draw-prompt" aria-hidden="true">
+          <p>Draw one line</p>
+          <span>Press and drag across the paper</span>
+        </div>
+        <div class="draw-card">
+          <div class="draw-copy">
+            <p class="eyebrow">Draw one line</p>
+            <h2 id="draw-title">One stroke. One coaster.</h2>
+            <p class="draw-hint">
+              Press and drag left to right. A drop, a loop, a flat run: it all rides.
+            </p>
+          </div>
+          <div class="draw-actions">
+            <button id="clear-button" class="secondary-button" type="button" disabled>Clear</button>
+            <button id="ride-drawn-button" class="primary-button" type="button" disabled>
+              Ride the line
+            </button>
+          </div>
+          <p id="draw-status" class="draw-status" role="status" aria-live="polite"></p>
         </div>
       </section>
 
@@ -59,16 +95,28 @@
         <p class="hint">C for comfort view</p>
       </section>
 
-      <section id="end-screen" class="screen hidden">
+      <section id="end-screen" class="screen hidden" aria-hidden="true">
         <div class="card">
-          <p class="eyebrow">Test track complete</p>
+          <p class="eyebrow">Track complete</p>
           <h2>Nice line.</h2>
-          <p class="result">Top speed <strong id="max-speed">0</strong> km/h</p>
-          <button id="again-button" type="button">Ride again</button>
+          <div class="stats">
+            <p><strong id="max-speed">0</strong><span>km/h top speed</span></p>
+            <p><strong id="track-length">0</strong><span>m of track</span></p>
+          </div>
+          <div class="end-actions">
+            <button id="redraw-button" class="secondary-button" type="button">Redraw</button>
+            <button id="again-button" class="primary-button" type="button">Ride again</button>
+          </div>
         </div>
       </section>
 
-      <button id="mute-button" class="icon-button hidden" type="button" aria-label="Toggle sound">
+      <button
+        id="mute-button"
+        class="icon-button hidden"
+        type="button"
+        aria-label="Toggle sound"
+        aria-pressed="false"
+      >
         <span id="mute-icon">Sound on</span>
       </button>
     </div>

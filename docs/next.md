@@ -1,53 +1,48 @@
-# Next milestone: the drawing layer
+# Milestone: the drawing layer
+
+**Status:** landed on `feat/drawing-layer`, awaiting review. The next milestone is the thrill score and sharing.
 
 ## Goal
 
-Replace the fixed test track with a track drawn in one stroke, while keeping the current camera feel. The player draws a line, the line becomes a coaster, and the ride starts.
+Replace the fixed test track with a track drawn in one stroke, while keeping the camera feel. The player draws a line, the line becomes a coaster, and the ride starts.
 
 ## Definition of done
 
-- A new "Draw" screen captures one pointer stroke from press to release, including touch.
-- The stroke is smoothed, resampled, and mapped into a rideable spline.
-- The ride uses the same camera rig and speed model as the test track.
-- A stroke with a loop produces a loop. The camera goes upside down and the track stays coral.
-- The start band stays track-relative. The start flag is placed from the start band's frame.
-- `?t=` freezes work on the drawn track in the same session. A reload does not reconstruct the stroke yet.
-- `npm run verify` and `npm run test` pass.
-- The Playwright smoke test covers the new draw screen, the start flow, the three freeze views, and the full ride restart.
-- Clear, Redraw, Ride, and the end screen are keyboard accessible. The stroke itself is pointer or touch.
-- The README screenshots and `public/og.jpg` are updated if the hero visuals change.
+- [x] A Draw screen captures one pointer stroke from press to release, including touch.
+- [x] The stroke is smoothed, resampled, and mapped into a rideable spline.
+- [x] The ride uses the same camera rig and speed model as the test track.
+- [x] A stroke with a loop produces a loop. The camera goes upside down and the track stays coral.
+- [x] The start band is track-relative. The start flag is placed from the start band's frame.
+- [x] `?t=` freezes work on the drawn track in the same session. The query is read again when a drawn track starts. A reload does not reconstruct the stroke.
+- [x] `npm run verify` and `npm run test` pass.
+- [x] The Playwright smoke test covers the draw screen, the start flow, the three test-track freeze views, a drawn freeze, and the full ride restart.
+- [x] Clear, Redraw, Ride, and the end screen are keyboard accessible. The stroke itself is pointer or touch.
+- [ ] The README screenshots and `public/og.jpg` are updated if the hero visuals change. The start screenshot is updated; the social image still shows the same drop.
 
-## Build order
+## What landed
 
-1. **Make the track data-driven and disposable.** Move the fixed points out of the constructor into `TEST_TRACK_POINTS` and `createTestTrack()`. Add `constructor(points)`. Add `Track.dispose()` to release the ribbon, tie, rail, and line geometries, the materials, and the canvas texture. Every redraw otherwise leaks a texture and buffers.
-2. **Build the pure stroke module first.** Add `src/stroke.js` with no DOM access: drop near-duplicate points, smooth with Chaikin or a moving average, resample to even spacing, reject short or jumpy strokes, map the side view to world points, and return the point array. Add a `test:unit` script with `node --test` and include it in `verify` before any UI work.
-3. **Add the draw screen.** New `src/draw.js` plus markup and styles: full-screen overlay canvas, pointer capture, Draw, Clear, Redraw, and Ride. The start card becomes the intro. The stroke is pointer and touch only.
-4. **Map to 3D.** Normalize the canvas to `u` left to right and `v` bottom to top. Map `z = lerp(-30, 170, u)`, `y = lerp(6, 70, v)`, and `x = 0`. The world center is around `z = 50`; the ground is at `y = -75`. This is a starting rule. Clamp points to the valley.
-5. **Place the start markers.** Keep the start band track-relative. Place the flag from the start band's frame at `u = 0.035`: position it along the frame's right vector at `TRACK_WIDTH / 2 + arm length`, and orient the outrigger to that right vector. Retain the flag group reference so it can move.
-6. **Wire the ride.** Change the `track` binding in `src/main.js` to `let`, rebuild the track on Ride, call `track.dispose()` on the old one, assign `ride.track`, and call `ride.reset()`. Extend the state machine with draw and drawn states. Bypass the start card for `?t=`, with the same-session limit from the definition of done.
-7. **Test the feel.** Draw a drop, a loop, a flat line, a scribble, and a very short line. Tune the smoothing, minimum speed, and thresholds.
-8. **Polish.** Enforce the single stroke rule, add the end screen with the track length, and update the README screenshots if the visuals change. The thrill score and URL sharing stay in the next milestone.
-9. **Test the flow.** Keep the `#app canvas` locator so the overlay canvas does not create a strict-mode match. Add a draw and ride test. Keep the three freeze views and the full ride restart test.
+1. **Data-driven track.** `Track` takes a point array. `TEST_TRACK_POINTS` and `createTestTrack()` hold the feel-test track. `Track.dispose()` releases every geometry, material, and the canvas texture.
+2. **Pure stroke module.** `src/stroke.js` drops near-duplicates, smooths with Chaikin, resamples to 2 world units, rejects short, jumpy, and off-canvas strokes, and maps the side view into the valley. `npm run test:unit` uses `node --test` and runs inside `verify`.
+3. **Draw screen.** `src/draw.js` owns the overlay canvas, pointer capture, the single stroke rule, cancel handling, resize rescaling, and the coral preview. `index.html` and `src/style.css` add the intro, draw, and end screens.
+4. **World mapping.** `z = lerp(-30, 170, u)`, `y = lerp(6, 70, v)`, `x = 0`. The mapped points stay inside the near mountain ring and above the ground plane.
+5. **Start markers.** The start band is still track-relative. `World.placeStartFlag(track)` places the flag from the start band frame at `u = 0.035` and reorients the outrigger.
+6. **Ride wiring.** `main.js` builds a new `Track` on Ride, keeps the old one alive until the new one exists, then disposes it, moves the flag, assigns `ride.track`, and resets the ride. The state machine is `idle`, `draw`, `drawn`, `riding`, `done`, and `frozen`.
+7. **Feel pass.** A drawn loop inverts the camera. The ribbon stays coral. Flat strokes produce a calm ride.
+8. **Polish.** The single stroke rule is enforced. The end screen shows top speed and track length. Clear and Redraw are wired. Focus moves to the draw region and the end screen primary action.
+9. **Test flow.** CI runs the Playwright suite, which uses `#app canvas` so the overlay canvas cannot create a strict-mode match. Every smoke test fails on page or console errors. Unit tests cover the stroke rules and the planar track frame and dispose contract. Local browser QA uses browse or a normal browser window to avoid software WebGL heat.
 
-## Design rules
+## Decisions
 
-- Reject strokes shorter than 60 world units, strokes with a single segment longer than 40 world units, and strokes that leave the canvas. Allow flat strokes; they produce a calm ride.
-- Side-view tracks have no horizontal curvature, so v1 has no banked turns. The current bank formula should be quiet at the loop because the heading flip happens where the horizontal factor is near zero, but test the loop entry and exit for a hard roll. A depth input can add banking later.
-- The start band is already track-relative. Only the flag needs the start-band placement.
-- The draw screen is pointer and touch. The buttons and the end screen are keyboard accessible.
-- The smoke test's canvas locator must be `#app canvas`, because the draw overlay adds a second canvas.
+- A side-view track is planar (`x = 0`). It uses the in-plane normal `up = normalize(0, tangent.z, -tangent.y)`, `right = +X`, and zero bank. Parallel transport is kept for tracks with depth, including the test track. This avoids the fallback flip and the bank spike that a vertical loop would otherwise cause.
+- The draw screen pauses the 3D render. The overlay is nearly opaque, so this saves frames while drawing.
+- A rejected stroke stays visible with Clear enabled and a "Clear to try again" message, so the player can see what failed. A valid stroke locks further pointer input until Clear. Pointer cancel and lost capture discard the stroke. Window resize rescales the stored points and rechecks the result.
+- Focus moves to the draw region when it opens and to the end screen primary action when a ride finishes.
+- The start card is the intro. The test track has no user-facing button. `?t=` still bypasses the intro and shows the test track, because a reload has no stroke to rebuild.
 
-## Risks
-
-- A self-intersecting stroke can create a spline that clips or twists. Test loops first.
-- A very short stroke makes the camera look-ahead too large relative to the track. Clamp the track length and the look-ahead.
-- The drawing canvas and the 3D canvas need to share pointer events cleanly. Use one overlay canvas with `pointer-events: auto`, and pause the idle camera while drawing.
-- The start flag's outrigger is tied to the test track's edge. Recompute it from the start band's right vector and the track width.
-- The world placement constants are a starting point. A stroke near the top of the canvas can end up above the rings or inside a mountain. Clamp the mapped `y` and `z` to the valley.
-
-## After this
+## Next
 
 - Thrill score: max speed, airtime, inversions, near misses, smoothness.
 - Share: encode the stroke in the URL hash, compress quantized deltas.
 - Daily prompt: a date seed and a one-line challenge.
 - Postcard: pause, orbit, export a paper-framed PNG.
+- Depth input: pressure, stroke speed, or a slider mapped to world X, which would also bring banked turns back.
