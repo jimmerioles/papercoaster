@@ -29,7 +29,7 @@ Replace the fixed test track with a track drawn in one stroke, while keeping the
 6. **Ride wiring.** `main.js` builds a new `Track` on Ride, keeps the old one alive until the new one exists, then disposes it, moves the flag, assigns `ride.track`, and resets the ride. The state machine is `idle`, `draw`, `drawn`, `riding`, `done`, and `frozen`.
 7. **Feel pass.** A drawn loop inverts the camera. The ribbon stays coral. Flat strokes produce a calm ride.
 8. **Polish.** The single stroke rule is enforced. The end screen shows top speed and track length. Clear and Redraw are wired. Focus moves to the draw region and the end screen primary action.
-9. **Test flow.** The Playwright suite uses `#app canvas` so the overlay canvas cannot create a strict-mode match. Every smoke test fails on page or console errors. Unit tests cover the stroke rules and the planar track frame and dispose contract.
+9. **Test flow.** CI runs the Playwright suite, which uses `#app canvas` so the overlay canvas cannot create a strict-mode match. Every smoke test fails on page or console errors. Unit tests cover the stroke rules and the planar track frame and dispose contract. Local browser QA uses browse or a normal browser window to avoid software WebGL heat.
 
 ## Decisions
 

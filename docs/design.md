@@ -79,7 +79,9 @@ The drawing layer covers steps 1 to 3. Sharing is a later milestone.
 
 ## Testing
 
-The automated gates are `npm run verify` (format, lint, `node --test`, build) and `npm run test` (Playwright). The unit tests cover the stroke pipeline, its rejection rules, the planar frame contract, and `Track.dispose()`. The smoke test covers the intro, the draw screen, a rejected short stroke, Clear, the single stroke lock, a resize, a drawn ride, the speed HUD, the progress bar, a same-session drawn freeze, the three test-track freeze views, the end screen focus, and the full ride restart with R. It fails on any page error or console error in every test.
+The local gate is `npm run verify` (format, lint, `node --test`, build). CI runs format, lint, unit tests, build, and `npm run test` (Playwright) on GitHub runners. Browse or a normal browser window is the preferred local browser check because headless Chromium uses software WebGL and can heat a laptop. The Playwright config stays at one worker.
+
+The unit tests cover the stroke pipeline, its rejection rules, the planar frame contract, and `Track.dispose()`. The smoke test covers the intro, the draw screen, a rejected short stroke, Clear, the single stroke lock, a resize, a drawn ride, the speed HUD, the progress bar, a same-session drawn freeze, the three test-track freeze views, the end screen focus, and the full ride restart with R. It fails on any page error or console error in every test.
 
 The visual composition is still checked by eye with the `?t` freezes and with drawn loop freezes. Background tabs throttle animation, so the ride feel must be checked in a foreground tab. The test-track freezes stay available through `?t=` after reload.
 

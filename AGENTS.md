@@ -10,17 +10,16 @@ Read `README.md` for the product and commands. Read `docs/design.md` before chan
 
 1. `npm ci`
 2. `npm run verify`
-3. `npx playwright install chromium` once per machine
-4. `npm run test`
-5. `npm run dev`, draw a line, ride it, then check the four `?t` views below for the test track
-6. Read `docs/next.md` for the remaining milestones
+3. `npm run dev`
+4. Draw a line, ride it, then check the four `?t` views below for the test track
+5. Read `docs/next.md` for the remaining milestones
 
-Done when `verify` and `test` pass and the four views look right.
+Done when `verify` passes, CI's browser test passes, and the four views look right. Use browse or your own browser for local visual checks. Do not run the full Playwright suite on a laptop unless you need to.
 
 ## Run and verify
 
-- `npm run verify` runs the format check, lint, unit tests, and build. This is the fast gate.
-- `npm run test` runs the Playwright smoke test. Install Chromium once with `npx playwright install chromium`.
+- `npm run verify` runs the format check, lint, unit tests, and build. This is the fast local gate.
+- `npm run test` runs the Playwright smoke test. This is the CI browser gate. It launches headless Chromium with software WebGL and can heat a laptop, so prefer browse for local QA. The config caps it at one worker.
 - `npm run test:unit` runs the pure stroke and track tests with `node --test`.
 - `npm run dev` starts Vite at http://localhost:5173.
 - `npm install` for a local checkout. `npm ci` for a clean, reproducible install.
@@ -30,9 +29,15 @@ Done when `verify` and `test` pass and the four views look right.
   - Loop: `?t=0.48` is upside down. The track stays coral.
   - Turn: `?t=0.66` banks into the turn.
 - The console should be clean. The favicon is inline, so a favicon 404 means the HTML regressed.
-- The smoke test covers the intro, the draw screen, a rejected short stroke, Clear, a drawn ride, a drawn freeze, the test-track freeze views, and the full ride restart. The visual composition is still checked by eye.
+- The smoke test covers the intro, the draw screen, a rejected short stroke, Clear, a single stroke lock, a resize, a drawn ride, a drawn freeze, the test-track freeze views, end screen focus, and the full ride restart. The visual composition is still checked by eye.
 
 The ride runs at full speed only in an active tab. Background tabs throttle `requestAnimationFrame`. Use the `?t` freezes for layout checks and a foreground tab for feel checks. A reload cannot reconstruct a drawn stroke, so `?t` on load uses the test track.
+
+## Local browser QA
+
+Use browse for local visual and interaction checks when it is available. Browse drives the real Chrome window and GPU, which is much lighter than four headless Chromium pages on a laptop. If browse is not available, use `npm run dev` and a normal browser window.
+
+The Playwright suite stays as the reproducible CI gate. Run it locally only when you need to debug the suite, and keep it at one worker. A software WebGL ride at full speed is the heavy part.
 
 ## Feel rules
 

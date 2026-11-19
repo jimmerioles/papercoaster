@@ -53,11 +53,12 @@ Open http://localhost:5173.
 
 ```bash
 npm run verify
-npx playwright install chromium
-npm run test
+npm run dev
 ```
 
-`npm run verify` runs the format check, lint, unit tests, and build. `npm run test` runs the Playwright smoke test. `npm run test:unit` runs the pure stroke tests with `node --test`. `npm run test:ui` opens the interactive runner. The Chromium install is once per machine. `npm run format` rewrites the files with Prettier. The production build uses the `/papercoaster/` base for GitHub Pages.
+`npm run verify` runs the format check, lint, unit tests, and build. Use `npm run dev` and browse or your own browser for local visual checks. `npm run test` runs the Playwright smoke test in CI. It launches headless Chromium with software WebGL, so a local run can heat a laptop; the config caps it at one worker. `npm run test:unit` runs the pure stroke and track tests with `node --test`. `npm run test:ui` opens the interactive runner. `npm run format` rewrites the files with Prettier. The production build uses the `/papercoaster/` base for GitHub Pages.
+
+If you do need Playwright locally, install Chromium once with `npx playwright install chromium`.
 
 ## Deploy
 
@@ -68,7 +69,7 @@ Pushes to `main` run CI and deploy `dist/` to GitHub Pages through `.github/work
 - **Agents:** read [`AGENTS.md`](AGENTS.md) first. It has the run, verify, feel rules, and architecture map.
 - **Design:** [`docs/design.md`](docs/design.md) has the camera, track, stroke, world, and drawing-layer notes.
 - **Next:** [`docs/next.md`](docs/next.md) has what landed and the next milestones.
-- **Tests:** [`tests/smoke.spec.js`](tests/smoke.spec.js) is the browser smoke test, and [`test/stroke.test.js`](test/stroke.test.js) covers the stroke pipeline.
+- **Tests:** [`tests/smoke.spec.js`](tests/smoke.spec.js) is the CI browser smoke test, [`test/stroke.test.js`](test/stroke.test.js) covers the stroke pipeline, and [`test/track.test.js`](test/track.test.js) covers track frames and dispose.
 - **Release:** [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md) is the feel-test release note.
 
 ## Known rough edges
@@ -82,7 +83,7 @@ Pushes to `main` run CI and deploy `dist/` to GitHub Pages through `.github/work
 
 - three.js 0.187
 - Vite 8
-- Playwright for the browser smoke test
+- Playwright for the CI browser smoke test
 - Plain JavaScript, no framework
 - No external assets. Textures and geometry are generated in code.
 
