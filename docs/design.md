@@ -60,28 +60,30 @@ The feel test covers steps 2 and 3 with a fixed track.
 
 ## The drawing layer
 
-The plan is in `docs/next.md`. The key design decision:
+The plan is in `docs/next.md`. The key design decisions:
 
-- Draw in a side view. The stroke's x maps to world Z (forward), the stroke's y maps to world Y (height), and world X stays 0. This preserves the drop and loop from the feel test, keeps the input readable, and avoids the ambiguity of drawing in 3D with a mouse.
-- A later milestone can add depth by mapping a second input (pressure, stroke speed, or a slider) to world X.
+- Draw in a side view. Normalize the canvas to `u` left to right and `v` bottom to top. Map `z = lerp(-30, 170, u)`, `y = lerp(6, 70, v)`, and `x = 0`. The world center is around `z = 50`; the ground is at `y = -75`. This is a starting rule; clamp the mapped points to the valley.
+- A side-view track has no horizontal curvature, so v1 has no banked turns. The current bank formula should be quiet at the loop because the heading flip happens where the horizontal factor is near zero, but test the loop entry and exit for a hard roll. A later milestone can add depth by mapping a second input (pressure, stroke speed, or a slider) to world X.
+- The start band is already track-relative. Only the flag needs the start-band placement.
+- The draw screen is pointer and touch. The buttons and the end screen are keyboard accessible.
+- `?t=` works on a drawn track only in the same session. The stroke is not encoded yet; sharing is a later milestone.
+- The fixed points stay as `createTestTrack()` for tests and comparison, not a user-facing mode.
 
 ## Testing
 
-The automated gates are `npm run verify` (format, lint, build) and `npm run test` (Playwright). The smoke test covers the start screen, the ride start, the speed HUD, the progress bar, and the `?t=0.48` freeze. It fails on any page error or console error during the start flow.
+The automated gates are `npm run verify` (format, lint, build) and `npm run test` (Playwright). The smoke test covers the start screen, the ride start, the speed HUD, the progress bar, the three freeze views, and the full ride restart. It fails on any page error or console error during the start flow.
 
-The full ride, the loop feel, and the visual composition are still checked by eye with the `?t` freezes. Background tabs throttle animation, so the ride feel must be checked in a foreground tab.
+The visual composition is still checked by eye with the `?t` freezes. Background tabs throttle animation, so the ride feel must be checked in a foreground tab. When `src/stroke.js` lands, add `node --test` coverage and include it in `verify`.
 
 ## Constraints
 
 - Single-page Vite app. No backend, no login, no external assets.
 - The ride is a spline plus a speed model. No physics engine.
-- The build, lint, format, and Playwright smoke test are the automated gates. The full ride and visual composition are still manual.
+- The build, lint, format, and Playwright smoke test are the automated gates. The visual composition is still manual.
 - The app works on a laptop trackpad and on a touch screen. The ride is automatic; the drawing is the only input.
 
 ## Open questions
 
-- Should the first drawing milestone keep the fixed track as a demo, or replace it entirely?
-- What is the minimum track length before the ride is fun? What is the maximum before the URL gets long?
-- Should a drawn stroke that is too short or too flat be rejected, or auto-extended?
-- Should the comfort mode be the default on first visit?
+- Should a side-view track get a synthetic bank from vertical curvature, or wait for a depth input?
+- How should the drawn stroke be encoded in the URL, and how short can the link stay?
 - How should the thrill score weight speed, airtime, inversions, near misses, and smoothness?

@@ -29,7 +29,7 @@ Done when `verify` and `test` pass and the four views look right.
   - Loop: `?t=0.48` is upside down. The track stays coral.
   - Turn: `?t=0.66` banks into the turn.
 - The console should be clean. The favicon is inline, so a favicon 404 means the HTML regressed.
-- The smoke test covers the start flow and the `?t=0.48` freeze. The full ride and the visual composition are still checked by eye.
+- The smoke test covers the start flow, the three freeze views, and the full ride restart. The visual composition is still checked by eye.
 
 The ride runs at full speed only in an active tab. Background tabs throttle `requestAnimationFrame`. Use the `?t` freezes for layout checks and a foreground tab for feel checks.
 

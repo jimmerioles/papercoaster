@@ -32,7 +32,7 @@ Open http://localhost:5173.
 
 - Click "Ride the test track" to start.
 - `C` toggles comfort view (horizon lock and fixed FOV). It turns on by default when the system prefers reduced motion.
-- `R` restarts the ride.
+- `R` restarts the ride while riding or from the end screen.
 - Add `?t=0.18` for the drop, `?t=0.48` for the loop, or `?t=0.66` for the turn to freeze the camera. The UI is hidden in these views.
 
 ## What is in the test
@@ -41,7 +41,7 @@ Open http://localhost:5173.
 - A POV camera with speed-based FOV, look-ahead, and banking.
 - A paper world: layered mountain rings, a winding river, a paper forest, clouds, a sun, and a start flag.
 - A speed HUD, progress bar, sound toggle, and procedural wind.
-- A Playwright smoke test for the start flow and the loop freeze.
+- A Playwright smoke test for the start flow, the three freeze views, and the full ride restart.
 - Debug frames: [loop](shots/loop.jpg), [banked turn](shots/turn.jpg).
 
 ## Development
@@ -71,7 +71,7 @@ Pushes to `main` run CI and deploy `dist/` to GitHub Pages through `.github/work
 - The track is fixed. The drawing layer is the next milestone.
 - Background tabs throttle the ride.
 - The title card hides the first drop until the ride starts.
-- The Playwright smoke test covers the start flow and the loop freeze. The full ride and visual composition still need manual QA.
+- The Playwright smoke test covers the start flow, the three freeze views, and the full ride restart. The visual composition still needs manual QA.
 
 ## Tech
 
