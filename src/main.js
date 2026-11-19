@@ -129,9 +129,11 @@ function handleStrokeChange(result) {
   }
 
   lastStroke = null;
-  ui.clearButton.disabled = true;
+  ui.clearButton.disabled = !result.hasStroke;
   ui.rideDrawnButton.disabled = true;
-  ui.drawStatus.textContent = result.reason ? describeStrokeError(result.reason) : '';
+  const message = result.reason ? describeStrokeError(result.reason) : '';
+  ui.drawStatus.textContent =
+    result.hasStroke && message ? `${message} Clear to try again.` : message;
   setState('draw');
 }
 

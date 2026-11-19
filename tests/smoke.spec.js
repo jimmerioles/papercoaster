@@ -61,7 +61,12 @@ test('draws a line, clears it, and rides it', async ({ page }) => {
     [0.21, 0.3],
   ]);
   await expect(page.locator('#ride-drawn-button')).toBeDisabled();
-  await expect(page.locator('#draw-status')).toContainText('longer');
+  await expect(page.locator('#clear-button')).toBeEnabled();
+  await expect(page.locator('#draw-status')).toContainText('Clear to try again');
+
+  await page.locator('#clear-button').click();
+  await expect(page.locator('#clear-button')).toBeDisabled();
+  await expect(page.locator('#draw-status')).toHaveText('');
 
   const stroke = [
     [0.14, 0.55],

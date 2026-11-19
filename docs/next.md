@@ -35,7 +35,7 @@ Replace the fixed test track with a track drawn in one stroke, while keeping the
 
 - A side-view track is planar (`x = 0`). It uses the in-plane normal `up = normalize(0, tangent.z, -tangent.y)`, `right = +X`, and zero bank. Parallel transport is kept for tracks with depth, including the test track. This avoids the fallback flip and the bank spike that a vertical loop would otherwise cause.
 - The draw screen pauses the 3D render. The overlay is nearly opaque, so this saves frames while drawing.
-- A rejected stroke clears itself and shows the reason. A valid stroke locks further pointer input until Clear. Pointer cancel and lost capture discard the stroke. Window resize rescales the stored points and rechecks the result.
+- A rejected stroke stays visible with Clear enabled and a "Clear to try again" message, so the player can see what failed. A valid stroke locks further pointer input until Clear. Pointer cancel and lost capture discard the stroke. Window resize rescales the stored points and rechecks the result.
 - Focus moves to the draw region when it opens and to the end screen primary action when a ride finishes.
 - The start card is the intro. The test track has no user-facing button. `?t=` still bypasses the intro and shows the test track, because a reload has no stroke to rebuild.
 

@@ -71,7 +71,8 @@ The drawing layer covers steps 1 to 3. Sharing is a later milestone.
 - While the draw screen is open, the 3D scene is paused. The overlay covers it, so rendering the diorama underneath would only spend frames.
 - The pipeline drops near-duplicate samples (0.75 canvas px), smooths with two Chaikin passes, resamples to 2 world units, and maps the side view to the valley: `z = lerp(-30, 170, u)`, `y = lerp(6, 70, v)`, `x = 0`. The world center is around `z = 50`; the ground is at `y = -75`.
 - A stroke is rejected if it leaves the canvas, has a segment longer than 40 world units, or measures less than 60 world units. Flat strokes are allowed and produce a calm ride. The rejection reason is shown under the buttons.
-- The single stroke rule is enforced after a valid stroke: further pointer input is ignored until Clear. An invalid attempt clears itself so the player can try again immediately.
+- The single stroke rule is enforced after any completed stroke: further pointer input is ignored until Clear. An invalid stroke stays visible with Clear enabled and a "Clear to try again" message, so the player can see what failed.
+- An empty draw screen shows a centered "Draw one line" prompt. The prompt fades when the stroke starts.
 - Pointer cancel and lost pointer capture discard the active stroke. A window resize rescales the stored points and rechecks the result, so the shape survives mobile address-bar and orientation changes.
 - Focus moves to the draw region when it opens, and to the end screen's primary action when a ride finishes. Clear, Redraw, Ride, and Ride again are native buttons.
 - `?t=` freezes the test track on load. The query is read again when a drawn track starts, so a same-session URL change freezes the drawn line. A reload cannot reconstruct the stroke yet.

@@ -8,6 +8,7 @@ export class DrawScreen {
   constructor(canvas, { onChange } = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+    this.root = canvas.closest('#draw-screen');
     this.onChange = onChange;
     this.points = [];
     this.result = null;
@@ -51,8 +52,12 @@ export class DrawScreen {
     this._render();
 
     if (notify) {
-      this.onChange?.({ ok: false, reason: null, points: [] });
+      this._emit({ ok: false, reason: null, points: [] });
     }
+  }
+
+  _emit(result) {
+    this.onChange?.({ ...result, hasStroke: this.points.length > 0 });
   }
 
   _resize() {
@@ -74,7 +79,7 @@ export class DrawScreen {
         this.result = result.ok ? result : null;
         if (!result.ok) {
           this.points = [];
-          this.onChange?.(result);
+          this._emit(result);
         }
       }
     }
@@ -135,16 +140,15 @@ export class DrawScreen {
     const result = prepareStroke(this.points, { width: this.width, height: this.height });
 
     if (!result.ok) {
-      this.points = [];
       this.result = null;
       this._render();
-      this.onChange?.(result);
+      this._emit(result);
       return;
     }
 
     this.result = result;
     this._render();
-    this.onChange?.(result);
+    this._emit(result);
   }
 
   _onPointerCancel(event) {
@@ -158,12 +162,13 @@ export class DrawScreen {
     this.points = [];
     this.result = null;
     this._render();
-    this.onChange?.({ ok: false, reason: 'cancelled', points: [] });
+    this._emit({ ok: false, reason: 'cancelled', points: [] });
   }
 
   _render() {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
+    this.root?.classList.toggle('has-stroke', this.points.length > 0);
 
     if (this.points.length === 0) return;
 
