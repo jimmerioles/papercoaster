@@ -20,6 +20,7 @@ const REASONS = Object.freeze({
   outside: 'Keep the whole stroke on the paper.',
   short: 'Draw a longer line. At least a small hill.',
   jump: 'That line jumped. Draw one continuous stroke.',
+  cancelled: 'That stroke stopped. Try drawing it again.',
 });
 
 export function describeStrokeError(reason) {

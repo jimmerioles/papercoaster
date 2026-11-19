@@ -45,8 +45,8 @@ Open http://localhost:5173.
 - A drawn track with a drop, a loop, or a flat run, plus the same POV camera, speed model, and comfort view as the test track.
 - A paper world: layered mountain rings, a winding river, a paper forest, clouds, a sun, and a start flag that moves with the start band.
 - A speed HUD, progress bar, sound toggle, and procedural wind.
-- A test track behind `?t=` for freeze views, and `createTestTrack()` for tests.
-- Unit tests for the stroke pipeline and a Playwright smoke test for the draw flow, freezes, and full ride restart.
+- A test track behind `?t=` for freeze views, and `createTestTrack()` for the idle scene and tests.
+- Unit tests for the stroke pipeline and the track frame/dispose contract, plus a Playwright smoke test for the draw flow, freezes, and full ride restart.
 - Debug frames: [loop](shots/loop.jpg), [banked turn](shots/turn.jpg).
 
 ## Development
@@ -75,7 +75,6 @@ Pushes to `main` run CI and deploy `dist/` to GitHub Pages through `.github/work
 
 - A reload does not reconstruct a drawn stroke. Sharing is the next milestone.
 - Background tabs throttle the ride.
-- The intro card hides the first drop until the ride starts.
 - A side-view track has no banked turns. A depth input can add them later.
 - The Playwright smoke test covers the draw flow and the freeze views. The visual composition still needs manual QA.
 

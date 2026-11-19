@@ -20,11 +20,13 @@ export class DrawScreen {
     this._onPointerDown = this._onPointerDown.bind(this);
     this._onPointerMove = this._onPointerMove.bind(this);
     this._onPointerUp = this._onPointerUp.bind(this);
+    this._onPointerCancel = this._onPointerCancel.bind(this);
 
     this.canvas.addEventListener('pointerdown', this._onPointerDown);
     this.canvas.addEventListener('pointermove', this._onPointerMove);
     this.canvas.addEventListener('pointerup', this._onPointerUp);
-    this.canvas.addEventListener('pointercancel', this._onPointerUp);
+    this.canvas.addEventListener('pointercancel', this._onPointerCancel);
+    this.canvas.addEventListener('lostpointercapture', this._onPointerCancel);
     window.addEventListener('resize', this._resize);
   }
 
@@ -54,6 +56,24 @@ export class DrawScreen {
     const width = Math.max(1, rect.width);
     const height = Math.max(1, rect.height);
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const scaleX = this.width > 0 ? width / this.width : 1;
+    const scaleY = this.height > 0 ? height / this.height : 1;
+
+    if (this.points.length > 0 && (scaleX !== 1 || scaleY !== 1)) {
+      this.points = this.points.map((point) => ({
+        x: point.x * scaleX,
+        y: point.y * scaleY,
+      }));
+
+      if (this.result) {
+        const result = prepareStroke(this.points, { width, height });
+        this.result = result.ok ? result : null;
+        if (!result.ok) {
+          this.points = [];
+          this.onChange?.(result);
+        }
+      }
+    }
 
     this.width = width;
     this.height = height;
@@ -78,7 +98,12 @@ export class DrawScreen {
 
     event.preventDefault();
     this.pointerId = event.pointerId;
-    this.canvas.setPointerCapture(event.pointerId);
+    try {
+      this.canvas.setPointerCapture(event.pointerId);
+    } catch {
+      this.pointerId = null;
+      return;
+    }
     this.points = [this._point(event)];
     this._render();
   }
@@ -98,10 +123,10 @@ export class DrawScreen {
   _onPointerUp(event) {
     if (!this.active || event.pointerId !== this.pointerId) return;
 
+    this.pointerId = null;
     if (this.canvas.hasPointerCapture(event.pointerId)) {
       this.canvas.releasePointerCapture(event.pointerId);
     }
-    this.pointerId = null;
 
     const result = prepareStroke(this.points, { width: this.width, height: this.height });
 
@@ -113,10 +138,23 @@ export class DrawScreen {
       return;
     }
 
-    this.points = this.points.slice();
     this.result = result;
     this._render();
     this.onChange?.(result);
+  }
+
+  _onPointerCancel(event) {
+    if (!this.active || event.pointerId !== this.pointerId) return;
+
+    this.pointerId = null;
+    if (this.canvas.hasPointerCapture(event.pointerId)) {
+      this.canvas.releasePointerCapture(event.pointerId);
+    }
+
+    this.points = [];
+    this.result = null;
+    this._render();
+    this.onChange?.({ ok: false, reason: 'cancelled', points: [] });
   }
 
   _render() {

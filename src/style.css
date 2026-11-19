@@ -73,13 +73,16 @@ body {
   pointer-events: none;
   transition:
     opacity 0.55s ease,
-    visibility 0.55s ease;
+    visibility 0s linear 0s;
 }
 
 .screen.hidden {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  transition:
+    opacity 0.55s ease,
+    visibility 0s linear 0.55s;
 }
 
 .card {
@@ -258,6 +261,7 @@ button {
   z-index: 3;
   display: block;
   padding: 0;
+  outline: none;
   background:
     radial-gradient(circle at 52% 38%, rgba(255, 247, 235, 0.7), rgba(255, 247, 235, 0.94) 68%),
     repeating-linear-gradient(

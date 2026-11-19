@@ -58,6 +58,7 @@
         class="screen draw-screen hidden"
         aria-labelledby="draw-title"
         aria-hidden="true"
+        tabindex="-1"
       >
         <canvas
           id="draw-canvas"
@@ -105,7 +106,13 @@
         </div>
       </section>
 
-      <button id="mute-button" class="icon-button hidden" type="button" aria-label="Toggle sound">
+      <button
+        id="mute-button"
+        class="icon-button hidden"
+        type="button"
+        aria-label="Toggle sound"
+        aria-pressed="false"
+      >
         <span id="mute-icon">Sound on</span>
       </button>
     </div>

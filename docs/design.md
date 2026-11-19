@@ -39,7 +39,7 @@ The drawing layer covers steps 1 to 3. Sharing is a later milestone.
 - The camera sits 2.2 units above the track. It looks ahead by `clamp(0.02 + speed * 0.0008, 0.02, 0.06)` of the track, and its up vector is the track's up. For a planar drawn track that up comes from the in-plane normal, so a drawn loop rolls the camera through upside down without banking the ribbon.
 - FOV is `68 + (speed / 52) * 16`. The interpolation is frame-rate independent.
 - Comfort mode blends the up vector toward world up by 0.68, projects it perpendicular to the view, and holds the FOV at 68. It is the horizon lock for motion-sensitive riders.
-- The idle camera bobs at the start line. The debug freeze (`?t=`) uses a nominal speed, so the FOV and bank are representative.
+- The idle camera bobs at the start line. The debug freeze (`?t=`) uses a nominal speed, so the bank is representative. The FOV stays near the base because the freeze sets the camera once.
 
 ## The world
 
@@ -72,12 +72,14 @@ The drawing layer covers steps 1 to 3. Sharing is a later milestone.
 - The pipeline drops near-duplicate samples (0.75 canvas px), smooths with two Chaikin passes, resamples to 2 world units, and maps the side view to the valley: `z = lerp(-30, 170, u)`, `y = lerp(6, 70, v)`, `x = 0`. The world center is around `z = 50`; the ground is at `y = -75`.
 - A stroke is rejected if it leaves the canvas, has a segment longer than 40 world units, or measures less than 60 world units. Flat strokes are allowed and produce a calm ride. The rejection reason is shown under the buttons.
 - The single stroke rule is enforced after a valid stroke: further pointer input is ignored until Clear. An invalid attempt clears itself so the player can try again immediately.
+- Pointer cancel and lost pointer capture discard the active stroke. A window resize rescales the stored points and rechecks the result, so the shape survives mobile address-bar and orientation changes.
+- Focus moves to the draw region when it opens, and to the end screen's primary action when a ride finishes. Clear, Redraw, Ride, and Ride again are native buttons.
 - `?t=` freezes the test track on load. The query is read again when a drawn track starts, so a same-session URL change freezes the drawn line. A reload cannot reconstruct the stroke yet.
-- The fixed points stay as `createTestTrack()` for tests and comparison, not a user-facing mode.
+- The fixed points stay as `createTestTrack()` for the idle scene, the `?t=` views, and tests, not a user-facing mode.
 
 ## Testing
 
-The automated gates are `npm run verify` (format, lint, `node --test`, build) and `npm run test` (Playwright). The unit tests cover the stroke pipeline and its rejection rules. The smoke test covers the intro, the draw screen, a rejected short stroke, Clear, a drawn ride, the speed HUD, the progress bar, a same-session drawn freeze, the three test-track freeze views, and the full ride restart with R. It fails on any page error or console error during the draw and start flow.
+The automated gates are `npm run verify` (format, lint, `node --test`, build) and `npm run test` (Playwright). The unit tests cover the stroke pipeline, its rejection rules, the planar frame contract, and `Track.dispose()`. The smoke test covers the intro, the draw screen, a rejected short stroke, Clear, the single stroke lock, a resize, a drawn ride, the speed HUD, the progress bar, a same-session drawn freeze, the three test-track freeze views, the end screen focus, and the full ride restart with R. It fails on any page error or console error in every test.
 
 The visual composition is still checked by eye with the `?t` freezes and with drawn loop freezes. Background tabs throttle animation, so the ride feel must be checked in a foreground tab. The test-track freezes stay available through `?t=` after reload.
 

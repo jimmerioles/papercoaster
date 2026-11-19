@@ -76,11 +76,16 @@ let muted = false;
 const drawScreen = new DrawScreen(ui.drawCanvas, { onChange: handleStrokeChange });
 
 function setState(next) {
+  const wasDrawing = state === 'draw' || state === 'drawn';
   state = next;
 
   const drawing = state === 'draw' || state === 'drawn';
   const riding = state === 'riding';
   const done = state === 'done';
+
+  if (wasDrawing && !drawing) {
+    drawScreen.close();
+  }
 
   ui.startScreen.classList.toggle('hidden', state !== 'idle');
   ui.drawScreen.classList.toggle('hidden', !drawing);
@@ -90,10 +95,19 @@ function setState(next) {
   ui.hud.setAttribute('aria-hidden', String(!riding));
   ui.muteButton.classList.toggle('hidden', !(riding || done));
 
+  if (drawing && !wasDrawing) {
+    requestAnimationFrame(() => {
+      if (state === 'draw' || state === 'drawn') ui.drawScreen.focus();
+    });
+  }
+
   if (done) {
     ui.maxSpeed.textContent = Math.round(ride.maxSpeed * 3.6);
     ui.trackLength.textContent = Math.round(track.length);
     fadeAudioOut();
+    requestAnimationFrame(() => {
+      if (state === 'done') ui.againButton.focus();
+    });
   }
 }
 
@@ -140,7 +154,15 @@ function startRide() {
 function rideDrawnTrack() {
   if (!lastStroke?.ok) return;
 
-  const nextTrack = new Track(lastStroke.points);
+  let nextTrack;
+  try {
+    nextTrack = new Track(lastStroke.points);
+  } catch (error) {
+    console.error(error);
+    ui.drawStatus.textContent = 'That line could not become a track. Draw it again.';
+    return;
+  }
+
   scene.remove(track.mesh);
   track.dispose();
   track = nextTrack;
@@ -159,7 +181,10 @@ function rideDrawnTrack() {
 
 ui.startButton.addEventListener('click', openDrawScreen);
 ui.rideDrawnButton.addEventListener('click', rideDrawnTrack);
-ui.clearButton.addEventListener('click', () => drawScreen.clear());
+ui.clearButton.addEventListener('click', () => {
+  drawScreen.clear();
+  ui.drawScreen.focus();
+});
 ui.redrawButton.addEventListener('click', openDrawScreen);
 ui.againButton.addEventListener('click', startRide);
 
@@ -240,6 +265,7 @@ function fadeAudioOut() {
 ui.muteButton.addEventListener('click', () => {
   muted = !muted;
   ui.muteIcon.textContent = muted ? 'Sound off' : 'Sound on';
+  ui.muteButton.setAttribute('aria-pressed', String(muted));
 
   if (muted) {
     if (audio) {

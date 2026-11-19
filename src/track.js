@@ -415,9 +415,10 @@ export class Track {
     });
 
     for (const material of materials) {
-      for (const key of ['map', 'alphaMap', 'normalMap', 'roughnessMap', 'metalnessMap']) {
-        if (material[key]) {
-          material[key].dispose();
+      for (const key of Object.keys(material)) {
+        const value = material[key];
+        if (value?.isTexture) {
+          value.dispose();
           material[key] = null;
         }
       }

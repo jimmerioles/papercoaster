@@ -21,7 +21,7 @@ Done when `verify` and `test` pass and the four views look right.
 
 - `npm run verify` runs the format check, lint, unit tests, and build. This is the fast gate.
 - `npm run test` runs the Playwright smoke test. Install Chromium once with `npx playwright install chromium`.
-- `npm run test:unit` runs the pure `src/stroke.js` tests with `node --test`.
+- `npm run test:unit` runs the pure stroke and track tests with `node --test`.
 - `npm run dev` starts Vite at http://localhost:5173.
 - `npm install` for a local checkout. `npm ci` for a clean, reproducible install.
 - Visual check: open the app, draw a line, and ride it. Then open the test track freezes and inspect four moments:
@@ -57,6 +57,7 @@ The ride is a spline plus a speed model, not a physics simulation. Keep the came
 - `playwright.config.js`: browser test config and dev server.
 - `tests/smoke.spec.js`: the draw flow, freezes, and the full ride restart.
 - `test/stroke.test.js`: pure unit tests for `src/stroke.js`.
+- `test/track.test.js`: unit tests for track frames, planar loops, and dispose.
 - `docs/design.md`: the math and the reasons behind it.
 - `docs/next.md`: the landed drawing layer and the next milestones.
 

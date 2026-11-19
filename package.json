@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Draw a line. Ride it. A three.js papercoaster feel test.",
+  "description": "Draw a line. Ride it. Turn one stroke into a paper rollercoaster.",
   "license": "MIT",
   "author": "Jim Merioles",
   "homepage": "https://jimmerioles.github.io/papercoaster/",

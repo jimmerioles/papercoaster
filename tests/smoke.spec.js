@@ -1,4 +1,25 @@
-import { test, expect } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
+
+const test = base.extend({
+  page: async ({ page }, use, testInfo) => {
+    const errors = [];
+
+    page.on('pageerror', (error) => {
+      errors.push(error.message);
+    });
+    page.on('console', (message) => {
+      if (message.type() === 'error') {
+        errors.push(message.text());
+      }
+    });
+
+    await use(page);
+
+    if (testInfo.status === 'passed') {
+      expect(errors, 'the page should report no errors').toEqual([]);
+    }
+  },
+});
 
 async function drawStroke(page, normalizedPoints) {
   const box = await page.locator('#draw-canvas').boundingBox();
@@ -20,23 +41,13 @@ async function drawStroke(page, normalizedPoints) {
 async function openDrawScreen(page) {
   await page.locator('#start-button').click();
   await expect(page.locator('#draw-screen')).toBeVisible();
+  await expect(page.locator('#draw-screen')).toBeFocused();
   await expect(page.locator('#clear-button')).toBeDisabled();
   await expect(page.locator('#ride-drawn-button')).toBeDisabled();
 }
 
 test('draws a line, clears it, and rides it', async ({ page }) => {
   test.setTimeout(60_000);
-
-  const errors = [];
-
-  page.on('pageerror', (error) => {
-    errors.push(error.message);
-  });
-  page.on('console', (message) => {
-    if (message.type() === 'error') {
-      errors.push(message.text());
-    }
-  });
 
   await page.goto('/');
   await expect(page).toHaveTitle('Papercoaster');
@@ -68,11 +79,21 @@ test('draws a line, clears it, and rides it', async ({ page }) => {
   await expect(page.locator('#ride-drawn-button')).toBeEnabled();
   await expect(page.locator('#draw-status')).toContainText('m of track');
 
+  const readyStatus = await page.locator('#draw-status').textContent();
+  await drawStroke(page, [
+    [0.2, 0.2],
+    [0.8, 0.2],
+  ]);
+  await expect(page.locator('#draw-status')).toHaveText(readyStatus);
+
   await page.locator('#clear-button').click();
   await expect(page.locator('#ride-drawn-button')).toBeDisabled();
   await expect(page.locator('#draw-status')).toHaveText('');
 
   await drawStroke(page, stroke);
+  await expect(page.locator('#ride-drawn-button')).toBeEnabled();
+
+  await page.setViewportSize({ width: 1000, height: 700 });
   await expect(page.locator('#ride-drawn-button')).toBeEnabled();
   await page.locator('#ride-drawn-button').click();
 
@@ -98,8 +119,6 @@ test('draws a line, clears it, and rides it', async ({ page }) => {
       },
     )
     .toBeGreaterThan(0);
-
-  expect(errors).toEqual([]);
 });
 
 test('freezes at the drop, loop, and turn with the UI hidden', async ({ page }) => {
@@ -152,6 +171,7 @@ test('completes a drawn ride and restarts with R', async ({ page }) => {
   await page.locator('#ride-drawn-button').click();
 
   await expect(page.locator('#end-screen')).toBeVisible({ timeout: 50_000 });
+  await expect(page.locator('#again-button')).toBeFocused();
   await expect(page.locator('#max-speed')).not.toHaveText('0');
   await expect(page.locator('#track-length')).not.toHaveText('0');
 

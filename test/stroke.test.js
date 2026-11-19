@@ -191,6 +191,7 @@ test('describes every rejection reason', () => {
   assert.match(describeStrokeError('outside'), /paper/);
   assert.match(describeStrokeError('short'), /longer/);
   assert.match(describeStrokeError('jump'), /continuous/);
+  assert.match(describeStrokeError('cancelled'), /stopped/);
   assert.match(describeStrokeError('invalid'), /could not be read/);
   assert.match(describeStrokeError('unknown'), /could not be read/);
 });
