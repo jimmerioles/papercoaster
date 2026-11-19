@@ -98,7 +98,7 @@ window.addEventListener('keydown', (event) => {
   if (key === 'c' && state === 'riding') {
     ride.comfort = !ride.comfort;
   }
-  if (key === 'r' && state === 'riding') {
+  if (key === 'r' && (state === 'riding' || state === 'done')) {
     startRide();
   }
 });
