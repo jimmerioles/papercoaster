@@ -88,12 +88,44 @@ export class Track {
     this.curve.arcLengthDivisions = 4000;
     this.curve.updateArcLengths();
     this.length = this.curve.getLength();
+    if (!Number.isFinite(this.length) || this.length < 1e-6) {
+      throw new Error('Track needs a non-zero length.');
+    }
+    this.planar = this.points.every((point) => Math.abs(point.x - this.points[0].x) < 1e-6);
     this.samples = THREE.MathUtils.clamp(Math.ceil(this.length * 8), 240, 1800);
     this.frames = this._computeFrames(this.samples);
     this.mesh = this._buildMesh();
   }
 
+  _computePlanarFrames(n) {
+    const frames = [];
+
+    for (let i = 0; i < n; i++) {
+      const u = i / (n - 1);
+      const position = this.curve.getPointAt(u);
+      const tangent = this.curve.getTangentAt(u).normalize();
+      const up = new THREE.Vector3(0, tangent.z, -tangent.y);
+
+      if (up.lengthSq() < 1e-8) {
+        up.set(0, 1, 0);
+      }
+      up.normalize();
+
+      frames.push({
+        position,
+        tangent,
+        up,
+        right: new THREE.Vector3().crossVectors(up, tangent).normalize(),
+        bank: 0,
+      });
+    }
+
+    return frames;
+  }
+
   _computeFrames(n) {
+    if (this.planar) return this._computePlanarFrames(n);
+
     const points = [];
     const tangents = [];
 

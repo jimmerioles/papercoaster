@@ -1,7 +1,9 @@
 import * as THREE from 'three';
-import { createTestTrack } from './track.js';
+import { Track, createTestTrack } from './track.js';
 import { World } from './world.js';
 import { Ride } from './ride.js';
+import { DrawScreen } from './draw.js';
+import { describeStrokeError } from './stroke.js';
 import './style.css';
 
 const app = document.querySelector('#app');
@@ -25,8 +27,9 @@ scene.fog = new THREE.FogExp2(0xffd3a3, 0.0015);
 const camera = new THREE.PerspectiveCamera(68, window.innerWidth / window.innerHeight, 0.1, 3000);
 
 const world = new World(scene);
-const track = createTestTrack();
+let track = createTestTrack();
 scene.add(track.mesh);
+world.placeStartFlag(track);
 const ride = new Ride(track, camera);
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -35,48 +38,92 @@ reducedMotion.addEventListener('change', (event) => {
   ride.comfort = event.matches;
 });
 
-const params = new URLSearchParams(window.location.search);
-const rawFreeze = params.get('t');
-const parsedFreeze = rawFreeze === null ? null : parseFloat(rawFreeze);
-const freezeT =
-  parsedFreeze !== null && Number.isFinite(parsedFreeze)
-    ? THREE.MathUtils.clamp(parsedFreeze, 0, 1)
-    : null;
+function readFreezeT() {
+  const raw = new URLSearchParams(window.location.search).get('t');
+  if (raw === null) return null;
+  const parsed = parseFloat(raw);
+  return Number.isFinite(parsed) ? THREE.MathUtils.clamp(parsed, 0, 1) : null;
+}
+
+const freezeT = readFreezeT();
 
 const ui = {
   startScreen: document.querySelector('#start-screen'),
+  drawScreen: document.querySelector('#draw-screen'),
   endScreen: document.querySelector('#end-screen'),
   hud: document.querySelector('#hud'),
   startButton: document.querySelector('#start-button'),
+  drawCanvas: document.querySelector('#draw-canvas'),
+  clearButton: document.querySelector('#clear-button'),
+  rideDrawnButton: document.querySelector('#ride-drawn-button'),
+  drawStatus: document.querySelector('#draw-status'),
+  redrawButton: document.querySelector('#redraw-button'),
   againButton: document.querySelector('#again-button'),
   speedValue: document.querySelector('#speed-value'),
   maxSpeed: document.querySelector('#max-speed'),
+  trackLength: document.querySelector('#track-length'),
   progressFill: document.querySelector('#progress-fill'),
   muteButton: document.querySelector('#mute-button'),
   muteIcon: document.querySelector('#mute-icon'),
 };
 
 let state = 'idle';
+let lastStroke = null;
 let audio = null;
 let audioClock = 0;
 let muted = false;
 
+const drawScreen = new DrawScreen(ui.drawCanvas, { onChange: handleStrokeChange });
+
 function setState(next) {
   state = next;
 
+  const drawing = state === 'draw' || state === 'drawn';
   const riding = state === 'riding';
   const done = state === 'done';
 
   ui.startScreen.classList.toggle('hidden', state !== 'idle');
+  ui.drawScreen.classList.toggle('hidden', !drawing);
+  ui.drawScreen.setAttribute('aria-hidden', String(!drawing));
   ui.endScreen.classList.toggle('hidden', !done);
   ui.hud.classList.toggle('hidden', !riding);
   ui.hud.setAttribute('aria-hidden', String(!riding));
-  ui.muteButton.classList.toggle('hidden', state === 'idle' || state === 'frozen');
+  ui.muteButton.classList.toggle('hidden', !(riding || done));
 
   if (done) {
     ui.maxSpeed.textContent = Math.round(ride.maxSpeed * 3.6);
+    ui.trackLength.textContent = Math.round(track.length);
     fadeAudioOut();
   }
+}
+
+function handleStrokeChange(result) {
+  if (state !== 'draw' && state !== 'drawn') return;
+
+  if (result.ok) {
+    lastStroke = result;
+    ui.clearButton.disabled = false;
+    ui.rideDrawnButton.disabled = false;
+    ui.drawStatus.textContent = `${Math.round(result.length)} m of track. Ready when you are.`;
+    setState('drawn');
+    return;
+  }
+
+  lastStroke = null;
+  ui.clearButton.disabled = true;
+  ui.rideDrawnButton.disabled = true;
+  ui.drawStatus.textContent = result.reason ? describeStrokeError(result.reason) : '';
+  setState('draw');
+}
+
+function openDrawScreen() {
+  drawScreen.open();
+  lastStroke = null;
+  ui.clearButton.disabled = true;
+  ui.rideDrawnButton.disabled = true;
+  ui.drawStatus.textContent = '';
+  fadeAudioOut();
+  setState('draw');
 }
 
 function startRide() {
@@ -90,7 +137,30 @@ function startRide() {
   startAudio();
 }
 
-ui.startButton.addEventListener('click', startRide);
+function rideDrawnTrack() {
+  if (!lastStroke?.ok) return;
+
+  const nextTrack = new Track(lastStroke.points);
+  scene.remove(track.mesh);
+  track.dispose();
+  track = nextTrack;
+  scene.add(track.mesh);
+  world.placeStartFlag(track);
+  ride.track = track;
+
+  const drawnFreeze = readFreezeT();
+  if (drawnFreeze !== null) {
+    ride.freezeAt(drawnFreeze);
+    setState('frozen');
+  } else {
+    startRide();
+  }
+}
+
+ui.startButton.addEventListener('click', openDrawScreen);
+ui.rideDrawnButton.addEventListener('click', rideDrawnTrack);
+ui.clearButton.addEventListener('click', () => drawScreen.clear());
+ui.redrawButton.addEventListener('click', openDrawScreen);
 ui.againButton.addEventListener('click', startRide);
 
 window.addEventListener('keydown', (event) => {
@@ -217,8 +287,10 @@ function tick() {
     ride.idle(dt);
   }
 
-  world.update(dt, camera);
-  renderer.render(scene, camera);
+  if (state !== 'draw' && state !== 'drawn') {
+    world.update(dt, camera);
+    renderer.render(scene, camera);
+  }
 }
 
 tick();

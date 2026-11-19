@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { START_BAND_START, TRACK_WIDTH } from './track.js';
+
+const FLAG_ARM_LENGTH = 1.6;
 
 const COLORS = {
   skyTop: 0x6aa4d4,
@@ -425,9 +428,12 @@ export class World {
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 4.5, 6), poleMaterial);
     pole.position.y = 2.25;
 
-    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.6, 6), poleMaterial);
+    const arm = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.05, FLAG_ARM_LENGTH, 6),
+      poleMaterial,
+    );
     arm.rotation.z = Math.PI / 2;
-    arm.position.set(-0.8, 0.05, 0);
+    arm.position.set(-FLAG_ARM_LENGTH / 2, 0.05, 0);
 
     const flagPivot = new THREE.Group();
     flagPivot.position.y = 4.2;
@@ -448,9 +454,23 @@ export class World {
     flagPivot.rotation.y = 0.3;
 
     group.add(pole, arm, flagPivot);
-    group.position.set(2.9, 42, -4);
+    this.flagGroup = group;
     this.flagPivot = flagPivot;
     this.scene.add(group);
+  }
+
+  placeStartFlag(track) {
+    if (!this.flagGroup) return;
+
+    const frame = track.getFrameAt(START_BAND_START);
+    const basis = new THREE.Matrix4().makeBasis(frame.right, frame.up, frame.tangent);
+    const center = frame.position
+      .clone()
+      .addScaledVector(frame.right, TRACK_WIDTH / 2 + FLAG_ARM_LENGTH)
+      .addScaledVector(frame.up, 0.05);
+
+    this.flagGroup.position.copy(center);
+    this.flagGroup.quaternion.setFromRotationMatrix(basis);
   }
 
   update(dt, camera) {

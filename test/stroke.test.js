@@ -165,6 +165,28 @@ test('resample keeps the endpoints and the requested spacing', () => {
   }
 });
 
+test('resample and length work without a z coordinate', () => {
+  const sampled = resample(
+    [
+      { x: 0, y: 0 },
+      { x: 0, y: 10 },
+    ],
+    2,
+  );
+
+  assert.equal(sampled.length, 6);
+  for (const point of sampled) {
+    assert.equal('z' in point, false);
+  }
+  assert.equal(
+    polylineLength([
+      { x: 0, y: 0 },
+      { x: 3, y: 4 },
+    ]),
+    5,
+  );
+});
+
 test('describes every rejection reason', () => {
   assert.match(describeStrokeError('outside'), /paper/);
   assert.match(describeStrokeError('short'), /longer/);

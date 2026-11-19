@@ -33,13 +33,18 @@ export function distance2D(a, b) {
 export function polylineLength(points) {
   let length = 0;
   for (let i = 1; i < points.length; i++) {
-    length += distance3D(points[i - 1], points[i]);
+    length += pointDistance(points[i - 1], points[i]);
   }
   return length;
 }
 
-function distance3D(a, b) {
-  return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+function pointDistance(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  if (Number.isFinite(a.z) && Number.isFinite(b.z)) {
+    return Math.hypot(dx, dy, a.z - b.z);
+  }
+  return Math.hypot(dx, dy);
 }
 
 function clamp(value, min, max) {
@@ -109,19 +114,15 @@ export function resample(points, spacing = STROKE_LIMITS.spacing) {
 
   for (let i = 1; i < points.length; i++) {
     const segmentEnd = points[i];
-    let segmentLength = distance3D(segmentStart, segmentEnd);
+    let segmentLength = pointDistance(segmentStart, segmentEnd);
 
     while (carried + segmentLength >= spacing && segmentLength > 1e-9) {
       const t = (spacing - carried) / segmentLength;
-      const point = {
-        x: lerp(segmentStart.x, segmentEnd.x, t),
-        y: lerp(segmentStart.y, segmentEnd.y, t),
-        z: lerp(segmentStart.z, segmentEnd.z, t),
-      };
+      const point = mix(segmentStart, segmentEnd, t);
 
       result.push(point);
       segmentStart = point;
-      segmentLength = distance3D(segmentStart, segmentEnd);
+      segmentLength = pointDistance(segmentStart, segmentEnd);
       carried = 0;
     }
 
@@ -185,7 +186,7 @@ export function prepareStroke(rawPoints, { width, height } = {}) {
   const mapped = mapStrokeToWorld(deduped, { width, height });
 
   for (let i = 1; i < mapped.length; i++) {
-    if (distance3D(mapped[i - 1], mapped[i]) > STROKE_LIMITS.maxSegment) {
+    if (pointDistance(mapped[i - 1], mapped[i]) > STROKE_LIMITS.maxSegment) {
       return { ok: false, reason: 'jump', points: [] };
     }
   }
