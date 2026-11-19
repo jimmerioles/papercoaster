@@ -41,17 +41,18 @@ Open http://localhost:5173.
 - A POV camera with speed-based FOV, look-ahead, and banking.
 - A paper world: layered mountain rings, a winding river, a paper forest, clouds, a sun, and a start flag.
 - A speed HUD, progress bar, sound toggle, and procedural wind.
+- A Playwright smoke test for the start flow and the loop freeze.
 - Debug frames: [loop](shots/loop.jpg), [banked turn](shots/turn.jpg).
 
 ## Development
 
 ```bash
-npm run lint
-npm run format:check
-npm run build
+npm run verify
+npx playwright install chromium
+npm run test
 ```
 
-`npm run format` rewrites the files with Prettier. The production build uses the `/papercoaster/` base for GitHub Pages.
+`npm run verify` runs the format check, lint, and build. `npm run test` runs the Playwright smoke test. `npm run test:ui` opens the interactive runner. The Chromium install is once per machine. `npm run format` rewrites the files with Prettier. The production build uses the `/papercoaster/` base for GitHub Pages.
 
 ## Deploy
 
@@ -62,6 +63,7 @@ Pushes to `main` run CI and deploy `dist/` to GitHub Pages through `.github/work
 - **Agents:** read [`AGENTS.md`](AGENTS.md) first. It has the run, verify, feel rules, and architecture map.
 - **Design:** [`docs/design.md`](docs/design.md) has the camera, track, world, and drawing-layer notes.
 - **Next:** [`docs/next.md`](docs/next.md) is the drawing-layer milestone with acceptance criteria.
+- **Tests:** [`tests/smoke.spec.js`](tests/smoke.spec.js) is the browser smoke test.
 - **Release:** [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md) is the feel-test release note.
 
 ## Known rough edges
@@ -69,12 +71,13 @@ Pushes to `main` run CI and deploy `dist/` to GitHub Pages through `.github/work
 - The track is fixed. The drawing layer is the next milestone.
 - Background tabs throttle the ride.
 - The title card hides the first drop until the ride starts.
-- There is no automated browser test yet. The build, lint, and format checks are the automated gates.
+- The Playwright smoke test covers the start flow and the loop freeze. The full ride and visual composition still need manual QA.
 
 ## Tech
 
 - three.js 0.187
 - Vite 8
+- Playwright for the browser smoke test
 - Plain JavaScript, no framework
 - No external assets. Textures and geometry are generated in code.
 

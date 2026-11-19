@@ -12,7 +12,8 @@ Replace the fixed test track with a track drawn in one stroke, while keeping the
 - A stroke with a loop produces a loop. The camera goes upside down and the track stays coral.
 - The start flag and start band are positioned from the drawn track, not hard-coded.
 - `?t=` debug freezes still work on the drawn track.
-- `npm run format:check`, `npm run lint`, and `npm run build` pass.
+- `npm run verify` and `npm run test` pass.
+- If the draw flow adds a new user-visible screen, the Playwright smoke test covers it.
 - The start screen, ride, and end screen are still usable with touch and keyboard.
 - The README screenshots and `public/og.jpg` are updated if the hero visuals change.
 
@@ -26,10 +27,11 @@ Replace the fixed test track with a track drawn in one stroke, while keeping the
 6. **Wire the ride.** On "Ride", rebuild the track and world markers, reset the ride, and start. Keep the "Redraw" action.
 7. **Test the feel.** Draw a drop, a loop, a flat line, a scribble, and a very short line. Tune the smoothing and the minimum speed.
 8. **Polish.** Add the single stroke rule (no editing), a "Clear" action, and the end screen with the track length. The thrill score and URL sharing can follow in the next milestone.
+9. **Test the flow.** Add a smoke test for the draw screen and the first ride on a drawn track. Keep the existing start and freeze tests.
 
 ## Design decisions to keep
 
-- Side-view drawing keeps the input legible. Do not add 3D camera controls to the draw screen in this milestone.
+- Keep the draw screen in side view for this milestone. It keeps the input legible.
 - The track is a spline, not a heightfield. It can cross itself.
 - The single stroke is the constraint that makes the toy a creative challenge. Keep editing out of v1.
 - The track's width and the camera's seat height are tuned. Change them only with a visual check of the loop.

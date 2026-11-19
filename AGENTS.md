@@ -6,18 +6,30 @@ Papercoaster: draw one line, it becomes a rollercoaster through a paper diorama,
 
 Read `README.md` for the product and commands. Read `docs/design.md` before changing the camera, track, or world. Read `docs/next.md` before starting the drawing layer.
 
+## First 10 minutes
+
+1. `npm ci`
+2. `npm run verify`
+3. `npx playwright install chromium` once per machine
+4. `npm run test`
+5. `npm run dev`, then check the four `?t` views below
+6. Read `docs/next.md` before the drawing layer
+
+Done when `verify` and `test` pass and the four views look right.
+
 ## Run and verify
 
-- `npm install` for a local checkout. `npm ci` for a clean, reproducible install.
+- `npm run verify` runs the format check, lint, and build. This is the fast gate.
+- `npm run test` runs the Playwright smoke test. Install Chromium once with `npx playwright install chromium`.
 - `npm run dev` starts Vite at http://localhost:5173.
-- `npm run build` is the build gate.
-- `npm run lint` and `npm run format:check` are the quality gates. All three must pass before a commit.
+- `npm install` for a local checkout. `npm ci` for a clean, reproducible install.
 - Visual check: open the app, click "Ride the test track", and inspect four moments:
   - Start: the track, flag, layered mountains, and river.
   - Drop: `?t=0.18` shows the red ribbon, river, and forest from above.
   - Loop: `?t=0.48` is upside down. The track stays coral.
   - Turn: `?t=0.66` banks into the turn.
 - The console should be clean. The favicon is inline, so a favicon 404 means the HTML regressed.
+- The smoke test covers the start flow and the `?t=0.48` freeze. The full ride and the visual composition are still checked by eye.
 
 The ride runs at full speed only in an active tab. Background tabs throttle `requestAnimationFrame`. Use the `?t` freezes for layout checks and a foreground tab for feel checks.
 
@@ -39,6 +51,8 @@ The ride is a spline plus a speed model, not a physics simulation. Keep the came
 - `src/ride.js`: energy speed model, camera rig, FOV, comfort mode, idle bob, freeze.
 - `src/world.js`: sky, sun, mountain rings, river, forest, clouds, start flag, lights.
 - `src/style.css`: title card, HUD, progress bar, responsive layout, reduced motion.
+- `playwright.config.js`: browser test config and dev server.
+- `tests/smoke.spec.js`: the start flow and the loop freeze.
 - `docs/design.md`: the math and the reasons behind it.
 - `docs/next.md`: the drawing-layer milestone with acceptance criteria and build order.
 
@@ -50,6 +64,7 @@ Track frames use parallel transport, not Frenet frames, because Frenet twists an
 - Generate textures and geometry in code. The app ships with no external assets.
 - Keep it a single-page Vite app with no backend and no login.
 - Use `?t=` freezes for visual checks. They hide the UI.
+- Update the Playwright smoke test when a user-visible flow changes.
 - Update `docs/design.md` when a system changes. Update `docs/next.md` when a milestone lands.
 - Keep the screenshots in `shots/` and the social image at `public/og.jpg` current when the hero visuals change.
 

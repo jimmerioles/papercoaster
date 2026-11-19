@@ -65,11 +65,17 @@ The plan is in `docs/next.md`. The key design decision:
 - Draw in a side view. The stroke's x maps to world Z (forward), the stroke's y maps to world Y (height), and world X stays 0. This preserves the drop and loop from the feel test, keeps the input readable, and avoids the ambiguity of drawing in 3D with a mouse.
 - A later milestone can add depth by mapping a second input (pressure, stroke speed, or a slider) to world X.
 
+## Testing
+
+The automated gates are `npm run verify` (format, lint, build) and `npm run test` (Playwright). The smoke test covers the start screen, the ride start, the speed HUD, the progress bar, and the `?t=0.48` freeze. It fails on any page error or console error during the start flow.
+
+The full ride, the loop feel, and the visual composition are still checked by eye with the `?t` freezes. Background tabs throttle animation, so the ride feel must be checked in a foreground tab.
+
 ## Constraints
 
 - Single-page Vite app. No backend, no login, no external assets.
 - The ride is a spline plus a speed model. No physics engine.
-- The build, lint, and format checks are the automated gates. Visual QA is still manual.
+- The build, lint, format, and Playwright smoke test are the automated gates. The full ride and visual composition are still manual.
 - The app works on a laptop trackpad and on a touch screen. The ride is automatic; the drawing is the only input.
 
 ## Open questions

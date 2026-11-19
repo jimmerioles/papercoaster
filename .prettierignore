@@ -4,3 +4,5 @@ package-lock.json
 shots
 public
 LICENSE
+playwright-report
+test-results
