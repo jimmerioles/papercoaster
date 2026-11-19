@@ -15,7 +15,7 @@ test('starts the ride and updates telemetry', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveTitle('Papercoaster');
   await expect(page.locator('#start-button')).toBeVisible();
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('#app canvas')).toBeVisible();
 
   await page.locator('#start-button').click();
   await expect(page.locator('#hud')).toBeVisible();
@@ -43,11 +43,28 @@ test('starts the ride and updates telemetry', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('freezes at the loop with the UI hidden', async ({ page }) => {
-  await page.goto('/?t=0.48');
+test('freezes at the drop, loop, and turn with the UI hidden', async ({ page }) => {
+  for (const t of [0.18, 0.48, 0.66]) {
+    await page.goto(`/?t=${t}`);
 
-  await expect(page.locator('canvas')).toBeVisible();
-  await expect(page.locator('#start-screen')).toBeHidden();
-  await expect(page.locator('#hud')).toBeHidden();
-  await expect(page.locator('#mute-button')).toBeHidden();
+    await expect(page.locator('#app canvas')).toBeVisible();
+    await expect(page.locator('#start-screen')).toBeHidden();
+    await expect(page.locator('#hud')).toBeHidden();
+    await expect(page.locator('#mute-button')).toBeHidden();
+  }
+});
+
+test('completes the full ride and restarts with R', async ({ page }) => {
+  test.setTimeout(45_000);
+
+  await page.goto('/');
+  await page.locator('#start-button').click();
+
+  await expect(page.locator('#end-screen')).toBeVisible({ timeout: 35_000 });
+  await expect(page.locator('#max-speed')).not.toHaveText('0');
+
+  await page.keyboard.press('r');
+
+  await expect(page.locator('#hud')).toBeVisible();
+  await expect(page.locator('#end-screen')).toBeHidden();
 });
