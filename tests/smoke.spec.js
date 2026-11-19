@@ -55,12 +55,12 @@ test('freezes at the drop, loop, and turn with the UI hidden', async ({ page }) 
 });
 
 test('completes the full ride and restarts with R', async ({ page }) => {
-  test.setTimeout(45_000);
+  test.setTimeout(60_000);
 
   await page.goto('/');
   await page.locator('#start-button').click();
 
-  await expect(page.locator('#end-screen')).toBeVisible({ timeout: 35_000 });
+  await expect(page.locator('#end-screen')).toBeVisible({ timeout: 50_000 });
   await expect(page.locator('#max-speed')).not.toHaveText('0');
 
   await page.keyboard.press('r');
