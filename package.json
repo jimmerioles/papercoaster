@@ -32,7 +32,7 @@
     "preview": "vite preview --host 0.0.0.0",
     "verify": "npm run format:check && npm run lint && npm run test:unit && npm run build",
     "test": "playwright test",
-    "test:unit": "node --test test/",
+    "test:unit": "node --test",
     "test:ui": "playwright test --ui",
     "lint": "eslint .",
     "format": "prettier --write .",
