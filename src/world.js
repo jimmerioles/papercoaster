@@ -3,7 +3,6 @@ import * as THREE from 'three';
 const COLORS = {
   skyTop: 0x6aa4d4,
   skyBottom: 0xffd3a3,
-  sun: 0xfff4d6,
   farMountain: 0xa894c4,
   midMountain: 0xb85f4f,
   nearMountain: 0x3f6f6a,
@@ -21,7 +20,7 @@ function makeGroundTexture() {
   canvas.height = size;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = '#24413f';
+  ctx.fillStyle = `#${COLORS.ground.toString(16).padStart(6, '0')}`;
   ctx.fillRect(0, 0, size, size);
 
   for (let i = 0; i < 1800; i++) {
@@ -177,7 +176,7 @@ export class World {
         ring.height,
         segments,
         1,
-        true
+        true,
       );
       const positions = geometry.attributes.position;
       const colors = new Float32Array(positions.count * 3);
@@ -291,8 +290,12 @@ export class World {
       transparent: true,
       opacity: 0.28,
     });
-    this.scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(leftBank), bankMaterial));
-    this.scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(rightBank), bankMaterial));
+    this.scene.add(
+      new THREE.Line(new THREE.BufferGeometry().setFromPoints(leftBank), bankMaterial),
+    );
+    this.scene.add(
+      new THREE.Line(new THREE.BufferGeometry().setFromPoints(rightBank), bankMaterial),
+    );
   }
 
   _createForest() {
@@ -378,7 +381,7 @@ export class World {
         blob.position.set(
           (j - blobs / 2) * 6.5 + Math.random() * 3,
           Math.random() * 3,
-          Math.random() * 5
+          Math.random() * 5,
         );
         cloud.add(blob);
       }
@@ -388,7 +391,7 @@ export class World {
       cloud.position.set(
         30 + Math.cos(angle) * distance,
         80 + Math.random() * 70,
-        50 + Math.sin(angle) * distance
+        50 + Math.sin(angle) * distance,
       );
       cloud.rotation.y = Math.random() * Math.PI;
       cloud.userData.phase = Math.random() * Math.PI * 2;
@@ -432,14 +435,7 @@ export class World {
     const flagGeometry = new THREE.BufferGeometry();
     flagGeometry.setAttribute(
       'position',
-      new THREE.Float32BufferAttribute(
-        [
-          0, 0.3, 0,
-          0, -0.5, 0,
-          1.6, -0.1, 0,
-        ],
-        3
-      )
+      new THREE.Float32BufferAttribute([0, 0.3, 0, 0, -0.5, 0, 1.6, -0.1, 0], 3),
     );
     flagGeometry.computeVertexNormals();
 

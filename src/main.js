@@ -13,6 +13,11 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.NoToneMapping;
 renderer.toneMappingExposure = 1;
 app.appendChild(renderer.domElement);
+renderer.domElement.setAttribute('role', 'img');
+renderer.domElement.setAttribute(
+  'aria-label',
+  'A first-person rollercoaster ride through a paper diorama.',
+);
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0xffd3a3, 0.0015);
@@ -24,12 +29,19 @@ const track = new Track();
 scene.add(track.mesh);
 const ride = new Ride(track, camera);
 
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+ride.comfort = reducedMotion.matches;
+reducedMotion.addEventListener('change', (event) => {
+  ride.comfort = event.matches;
+});
+
 const params = new URLSearchParams(window.location.search);
 const rawFreeze = params.get('t');
 const parsedFreeze = rawFreeze === null ? null : parseFloat(rawFreeze);
-const freezeT = parsedFreeze !== null && Number.isFinite(parsedFreeze)
-  ? THREE.MathUtils.clamp(parsedFreeze, 0, 1)
-  : null;
+const freezeT =
+  parsedFreeze !== null && Number.isFinite(parsedFreeze)
+    ? THREE.MathUtils.clamp(parsedFreeze, 0, 1)
+    : null;
 
 const ui = {
   startScreen: document.querySelector('#start-screen'),
@@ -46,6 +58,7 @@ const ui = {
 
 let state = 'idle';
 let audio = null;
+let audioClock = 0;
 let muted = false;
 
 function setState(next) {
@@ -93,6 +106,7 @@ window.addEventListener('keydown', (event) => {
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
@@ -135,8 +149,12 @@ function startAudio() {
   audio.gain.gain.setTargetAtTime(0.04, audio.ctx.currentTime, 0.25);
 }
 
-function updateAudio() {
+function updateAudio(dt) {
   if (!audio || muted) return;
+
+  audioClock += dt;
+  if (audioClock < 0.1) return;
+  audioClock = 0;
 
   const now = audio.ctx.currentTime;
   const targetGain = 0.025 + Math.min(ride.speed / 40, 1) * 0.07;
@@ -162,6 +180,16 @@ ui.muteButton.addEventListener('click', () => {
   }
 });
 
+document.addEventListener('visibilitychange', () => {
+  if (!audio) return;
+
+  if (document.hidden) {
+    audio.gain.gain.setTargetAtTime(0, audio.ctx.currentTime, 0.1);
+  } else if (!muted && state === 'riding') {
+    startAudio();
+  }
+});
+
 if (freezeT !== null) {
   ride.freezeAt(freezeT);
   setState('frozen');
@@ -180,7 +208,7 @@ function tick() {
     ride.update(dt);
     ui.speedValue.textContent = Math.round(ride.speed * 3.6);
     ui.progressFill.style.width = `${(ride.t * 100).toFixed(1)}%`;
-    updateAudio();
+    updateAudio(dt);
 
     if (ride.finished) {
       setState('done');

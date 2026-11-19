@@ -96,11 +96,12 @@ export class Track {
     for (let i = 0; i < n; i++) {
       const tangent = tangents[i];
 
-      const projected = transportUp.clone().sub(tangent.clone().multiplyScalar(transportUp.dot(tangent)));
+      const projected = transportUp
+        .clone()
+        .sub(tangent.clone().multiplyScalar(transportUp.dot(tangent)));
       if (projected.lengthSq() < 1e-8) {
-        const fallback = Math.abs(tangent.y) > 0.9
-          ? new THREE.Vector3(1, 0, 0)
-          : new THREE.Vector3(0, 1, 0);
+        const fallback =
+          Math.abs(tangent.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
         projected.copy(fallback).sub(tangent.clone().multiplyScalar(fallback.dot(tangent)));
       }
       transportUp.copy(projected.normalize());
@@ -115,10 +116,11 @@ export class Track {
       const bank = THREE.MathUtils.clamp(
         curvature * nominalSpeed * nominalSpeed * 0.01 * horizontal,
         -0.6,
-        0.6
+        0.6,
       );
 
-      const bankedUp = transportUp.clone()
+      const bankedUp = transportUp
+        .clone()
         .multiplyScalar(Math.cos(bank))
         .add(right.clone().multiplyScalar(Math.sin(bank)))
         .normalize();
@@ -213,14 +215,16 @@ export class Track {
     for (let i = 0; i < n; i++) {
       const frame = this.frames[i];
       leftPoints.push(
-        frame.position.clone()
+        frame.position
+          .clone()
           .addScaledVector(frame.right, -halfWidth)
-          .addScaledVector(frame.up, 0.025)
+          .addScaledVector(frame.up, 0.025),
       );
       rightPoints.push(
-        frame.position.clone()
+        frame.position
+          .clone()
           .addScaledVector(frame.right, halfWidth)
-          .addScaledVector(frame.up, 0.025)
+          .addScaledVector(frame.up, 0.025),
       );
     }
     group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(leftPoints), edgeMaterial));
@@ -249,8 +253,12 @@ export class Track {
       }
 
       tieIndices.push(
-        tieVertexCount, tieVertexCount + 2, tieVertexCount + 1,
-        tieVertexCount + 1, tieVertexCount + 2, tieVertexCount + 3
+        tieVertexCount,
+        tieVertexCount + 2,
+        tieVertexCount + 1,
+        tieVertexCount + 1,
+        tieVertexCount + 2,
+        tieVertexCount + 3,
       );
       tieVertexCount += 4;
     }
@@ -278,14 +286,16 @@ export class Track {
     for (let i = 0; i < n; i++) {
       const frame = this.frames[i];
       leftRail.push(
-        frame.position.clone()
+        frame.position
+          .clone()
           .addScaledVector(frame.right, -railOffset)
-          .addScaledVector(frame.up, 0.045)
+          .addScaledVector(frame.up, 0.045),
       );
       rightRail.push(
-        frame.position.clone()
+        frame.position
+          .clone()
           .addScaledVector(frame.right, railOffset)
-          .addScaledVector(frame.up, 0.045)
+          .addScaledVector(frame.up, 0.045),
       );
     }
     group.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(leftRail), railMaterial));
@@ -293,16 +303,20 @@ export class Track {
 
     const startA = this.getFrameAt(0.035);
     const startB = this.getFrameAt(0.0375);
-    const aLeft = startA.position.clone()
+    const aLeft = startA.position
+      .clone()
       .addScaledVector(startA.right, -halfWidth)
       .addScaledVector(startA.up, 0.05);
-    const aRight = startA.position.clone()
+    const aRight = startA.position
+      .clone()
       .addScaledVector(startA.right, halfWidth)
       .addScaledVector(startA.up, 0.05);
-    const bLeft = startB.position.clone()
+    const bLeft = startB.position
+      .clone()
       .addScaledVector(startB.right, -halfWidth)
       .addScaledVector(startB.up, 0.05);
-    const bRight = startB.position.clone()
+    const bRight = startB.position
+      .clone()
       .addScaledVector(startB.right, halfWidth)
       .addScaledVector(startB.up, 0.05);
 
@@ -311,13 +325,21 @@ export class Track {
       'position',
       new THREE.Float32BufferAttribute(
         [
-          aLeft.x, aLeft.y, aLeft.z,
-          aRight.x, aRight.y, aRight.z,
-          bLeft.x, bLeft.y, bLeft.z,
-          bRight.x, bRight.y, bRight.z,
+          aLeft.x,
+          aLeft.y,
+          aLeft.z,
+          aRight.x,
+          aRight.y,
+          aRight.z,
+          bLeft.x,
+          bLeft.y,
+          bLeft.z,
+          bRight.x,
+          bRight.y,
+          bRight.z,
         ],
-        3
-      )
+        3,
+      ),
     );
     bandGeometry.setIndex([0, 2, 1, 1, 2, 3]);
     bandGeometry.computeVertexNormals();

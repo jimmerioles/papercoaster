@@ -7,8 +7,8 @@
   --coral: #e85d3f;
   --coral-deep: #c9472d;
   --sky: #f6c9a8;
-  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
-  --font-ui: "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-display: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+  --font-ui: 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 * {
@@ -71,7 +71,9 @@ body {
   place-items: center;
   padding: 24px;
   pointer-events: none;
-  transition: opacity 0.55s ease, visibility 0.55s ease;
+  transition:
+    opacity 0.55s ease,
+    visibility 0.55s ease;
 }
 
 .screen.hidden {
@@ -146,20 +148,28 @@ button {
   font-weight: 700;
   letter-spacing: 0.01em;
   cursor: pointer;
-  box-shadow: 0 8px 0 var(--coral-deep), 0 18px 30px rgba(232, 93, 63, 0.3);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow:
+    0 8px 0 var(--coral-deep),
+    0 18px 30px rgba(232, 93, 63, 0.3);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 #start-button:hover,
 #again-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 0 var(--coral-deep), 0 22px 34px rgba(232, 93, 63, 0.34);
+  box-shadow:
+    0 10px 0 var(--coral-deep),
+    0 22px 34px rgba(232, 93, 63, 0.34);
 }
 
 #start-button:active,
 #again-button:active {
   transform: translateY(4px);
-  box-shadow: 0 4px 0 var(--coral-deep), 0 10px 20px rgba(232, 93, 63, 0.28);
+  box-shadow:
+    0 4px 0 var(--coral-deep),
+    0 10px 20px rgba(232, 93, 63, 0.28);
 }
 
 .note {
@@ -187,7 +197,9 @@ button {
   inset: 0;
   z-index: 3;
   pointer-events: none;
-  transition: opacity 0.4s ease, visibility 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    visibility 0.4s ease;
 }
 
 #hud.hidden {
@@ -282,7 +294,10 @@ button {
   cursor: pointer;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transition: opacity 0.4s ease, visibility 0.4s ease, background 0.15s ease;
+  transition:
+    opacity 0.4s ease,
+    visibility 0.4s ease,
+    background 0.15s ease;
 }
 
 .icon-button:hover {
@@ -322,5 +337,17 @@ button {
   .icon-button {
     top: 16px;
     right: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen,
+  #hud,
+  #start-button,
+  #again-button,
+  .icon-button,
+  #progress-fill,
+  .hint {
+    transition: none;
   }
 }

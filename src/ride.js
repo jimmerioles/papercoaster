@@ -37,8 +37,8 @@ export class Ride {
     const target = Math.sqrt(
       Math.max(
         this.minSpeed * this.minSpeed,
-        this.startSpeed * this.startSpeed + 2 * 9.8 * (this.startHeight - height)
-      )
+        this.startSpeed * this.startSpeed + 2 * 9.8 * (this.startHeight - height),
+      ),
     );
 
     const response = 1 - Math.exp(-dt * 4);
@@ -53,10 +53,10 @@ export class Ride {
       this.finished = true;
     }
 
-    this._setCameraAt(this.t, this.speed);
+    this._setCameraAt(this.t, this.speed, dt);
   }
 
-  _setCameraAt(u, speed) {
+  _setCameraAt(u, speed, dt = 1 / 60) {
     const frame = this.track.getFrameAt(u);
     const seat = frame.up.clone().multiplyScalar(2.2);
     this.camera.position.copy(frame.position).add(seat);
@@ -64,7 +64,7 @@ export class Ride {
     const lookAhead = THREE.MathUtils.clamp(
       this.lookAheadBase + speed * this.lookAheadSpeed,
       0.02,
-      0.06
+      0.06,
     );
     const lookU = Math.min(u + lookAhead, 1);
     const lookFrame = this.track.getFrameAt(lookU);
@@ -82,8 +82,9 @@ export class Ride {
     this.camera.lookAt(lookTarget);
 
     const speedRatio = THREE.MathUtils.clamp(speed / this.maxSpeedLimit, 0, 1);
-    const targetFov = this.baseFov + speedRatio * 16;
-    this.camera.fov += (targetFov - this.camera.fov) * 0.12;
+    const targetFov = this.comfort ? this.baseFov : this.baseFov + speedRatio * 16;
+    const fovResponse = 1 - Math.exp(-dt * 7);
+    this.camera.fov += (targetFov - this.camera.fov) * fovResponse;
     this.camera.updateProjectionMatrix();
   }
 

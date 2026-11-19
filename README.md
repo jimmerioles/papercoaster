@@ -1,10 +1,17 @@
 # Papercoaster
 
+[![CI](https://github.com/jimmerioles/papercoaster/actions/workflows/ci.yml/badge.svg)](https://github.com/jimmerioles/papercoaster/actions/workflows/ci.yml)
+[![Deploy](https://github.com/jimmerioles/papercoaster/actions/workflows/deploy.yml/badge.svg)](https://github.com/jimmerioles/papercoaster/actions/workflows/deploy.yml)
+[![Live demo](https://img.shields.io/badge/demo-live-e85d3f)](https://jimmerioles.github.io/papercoaster/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2f4f4f)](LICENSE)
+
 Draw a line. Ride it.
 
 A three.js side project: turn a single stroke into a rollercoaster through a paper diorama, then ride it in first person.
 
-This is the feel test. The track is fixed. The drawing layer comes next.
+**Status:** v0.1.0 feel test. The track is fixed. The drawing layer is next.
+
+**Live demo:** https://jimmerioles.github.io/papercoaster/
 
 ![Papercoaster start screen](shots/start.jpg)
 
@@ -12,19 +19,21 @@ This is the feel test. The track is fixed. The drawing layer comes next.
 
 ## Run
 
+Requires Node 22.12 or newer.
+
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+Open http://localhost:5173.
 
 ## Controls
 
 - Click "Ride the test track" to start.
-- `C` toggles comfort view (horizon lock).
+- `C` toggles comfort view (horizon lock and fixed FOV). It turns on by default when the system prefers reduced motion.
 - `R` restarts the ride.
-- Add `?t=0.48` to the URL to freeze the camera at a point on the track. Useful for inspecting the loop and the turn.
+- Add `?t=0.18` for the drop, `?t=0.48` for the loop, or `?t=0.66` for the turn to freeze the camera. The UI is hidden in these views.
 
 ## What is in the test
 
@@ -34,15 +43,41 @@ Open [http://localhost:5173](http://localhost:5173).
 - A speed HUD, progress bar, sound toggle, and procedural wind.
 - Debug frames: [loop](shots/loop.jpg), [banked turn](shots/turn.jpg).
 
+## Development
+
+```bash
+npm run lint
+npm run format:check
+npm run build
+```
+
+`npm run format` rewrites the files with Prettier. The production build uses the `/papercoaster/` base for GitHub Pages.
+
+## Deploy
+
+Pushes to `main` run CI and deploy `dist/` to GitHub Pages through `.github/workflows/deploy.yml`. The live URL is https://jimmerioles.github.io/papercoaster/.
+
+## Handoff
+
+- **Agents:** read [`AGENTS.md`](AGENTS.md) first. It has the run, verify, feel rules, and architecture map.
+- **Design:** [`docs/design.md`](docs/design.md) has the camera, track, world, and drawing-layer notes.
+- **Next:** [`docs/next.md`](docs/next.md) is the drawing-layer milestone with acceptance criteria.
+- **Release:** [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md) is the feel-test release note.
+
 ## Known rough edges
 
-- The tab must be visible for the ride to run at full speed. Background tabs throttle animation.
-- The first drop is hidden by the title card until the ride starts.
-- The drawing layer, thrill score, and URL sharing are not built yet.
+- The track is fixed. The drawing layer is the next milestone.
+- Background tabs throttle the ride.
+- The title card hides the first drop until the ride starts.
+- There is no automated browser test yet. The build, lint, and format checks are the automated gates.
 
-## Next
+## Tech
 
-1. **Draw.** A full-screen stroke canvas over the scene. Smooth, simplify, and turn the stroke into a 3D spline.
-2. **Ride.** Reuse the camera rig on the drawn track. Add the single stroke constraint.
-3. **Score.** Max speed, airtime, inversions, near misses, and smoothness.
-4. **Share.** Encode the stroke in the URL so a friend can ride the same track.
+- three.js 0.187
+- Vite 8
+- Plain JavaScript, no framework
+- No external assets. Textures and geometry are generated in code.
+
+## License
+
+MIT.
