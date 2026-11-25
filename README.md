@@ -10,7 +10,7 @@ A three.js paper coaster: one stroke becomes a rollercoaster through a paper dio
 
 **Live demo:** https://jimmerioles.github.io/papercoaster/
 
-https://github.com/user-attachments/assets/7fe19fdd-8710-4bbd-83fd-f3e9787cb8b2
+https://github.com/user-attachments/assets/aa538ce5-5967-4c88-8f70-0f924ac8636f
 
 Papercoaster is for anyone who has doodled a coaster in the margin and wondered how it would feel. There is no track editor: you draw one line, and the app turns it into a track with a drop, loop, or flat run. The whole world is generated in code, so the only asset is your stroke.
 
