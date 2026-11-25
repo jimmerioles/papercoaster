@@ -201,6 +201,7 @@ function rideDrawnTrack() {
 }
 
 ui.startButton.addEventListener('click', openDrawScreen);
+ui.startButton.disabled = false;
 ui.rideDrawnButton.addEventListener('click', rideDrawnTrack);
 ui.clearButton.addEventListener('click', () => {
   drawScreen.clear();
