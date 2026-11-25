@@ -1,92 +1,66 @@
 # Papercoaster
 
 [![CI](https://github.com/jimmerioles/papercoaster/actions/workflows/ci.yml/badge.svg)](https://github.com/jimmerioles/papercoaster/actions/workflows/ci.yml)
-[![Deploy](https://github.com/jimmerioles/papercoaster/actions/workflows/deploy.yml/badge.svg)](https://github.com/jimmerioles/papercoaster/actions/workflows/deploy.yml)
 [![Live demo](https://img.shields.io/badge/demo-live-e85d3f)](https://jimmerioles.github.io/papercoaster/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2f4f4f)](LICENSE)
 
 Draw a line. Ride it.
 
-A three.js side project: turn a single stroke into a rollercoaster through a paper diorama, then ride it in first person.
-
-**Status:** the drawing layer is landed on top of the v0.1.0 feel test. Draw a line, then ride it.
+A three.js paper coaster: one stroke becomes a rollercoaster through a paper diorama, then you ride it in first person.
 
 **Live demo:** https://jimmerioles.github.io/papercoaster/
 
-![Papercoaster start screen](shots/start.jpg)
+https://github.com/user-attachments/assets/e0adf4f0-4f93-4bea-877c-4e2e236f4ff4
 
-![The draw screen](shots/draw.jpg)
+Papercoaster is for anyone who has doodled a coaster in the margin and wondered how it would feel. There is no track editor: you draw one line, and the app turns it into a track with a drop, loop, or flat run. The whole world is generated in code, so the only asset is your stroke.
 
-![The first drop](shots/drop.jpg)
+## What you can do
 
-## Run
+- Draw one continuous stroke with a mouse, trackpad, or touch screen. A drop, a loop, or a flat run all become the track.
+- A stroke pipeline that turns noisy input into an even, rideable track, and explains why a line was rejected.
+- Ride in first person with an energy-based speed model, speed-based FOV, look-ahead, and a comfort view for motion-sensitive riders.
+- Fly through a paper diorama with layered mountain rings, a winding river, a forest, clouds, a sun, and a start flag.
+- Read speed and progress in the HUD. The end screen reports top speed and track length.
+- Try the test track with `?t=0.18` for the drop, `?t=0.48` for the loop, or `?t=0.66` for the turn.
+- No backend, no login, no external assets. Textures and geometry are generated at runtime.
+
+## Run it
 
 Requires Node 22.12 or newer.
 
 ```bash
 npm install
-npm run dev
+npm run dev        # http://localhost:5173
+npm run build      # production build
+npm run test       # Playwright smoke test
+npm run preview    # serve the production build
 ```
 
-Open http://localhost:5173.
+`npm run test` needs Chromium once with `npx playwright install chromium`. The browser test uses software WebGL and can heat a laptop, so `npm run verify` is the faster local gate for format, lint, unit tests, and build.
 
-## Controls
+## Use it
 
-- Click "Draw a line", then press and drag one stroke. The stroke becomes the track.
-- Clear removes the stroke. Ride the line builds the track and starts the ride.
-- `C` toggles comfort view (horizon lock and fixed FOV). It turns on by default when the system prefers reduced motion.
-- `R` restarts the ride while riding or from the end screen.
-- Add `?t=0.18` for the drop, `?t=0.48` for the loop, or `?t=0.66` for the turn to freeze the test track. The UI is hidden in these views. A reload cannot rebuild a drawn stroke, so `?t` on load uses the test track.
+1. Open the live demo or run `npm run dev`.
+2. Click **Draw a line**, then drag one stroke across the paper.
+3. Click **Ride the line**. Clear or Redraw to try another.
+4. Press `C` to toggle comfort view (on by default with reduced motion). Press `R` to restart the ride.
 
-## What is in it
+## How it works
 
-- One-stroke drawing on a pointer or touch screen, with Clear and Redraw.
-- A stroke pipeline: dedupe, Chaikin smoothing, even resampling, and rejection of short, jumpy, or off-canvas lines.
-- A drawn track with a drop, a loop, or a flat run, plus the same POV camera, speed model, and comfort view as the test track.
-- A paper world: layered mountain rings, a winding river, a paper forest, clouds, a sun, and a start flag that moves with the start band.
-- A speed HUD, progress bar, sound toggle, and procedural wind.
-- A test track behind `?t=` for freeze views, and `createTestTrack()` for the idle scene and tests.
-- Unit tests for the stroke pipeline and the track frame/dispose contract, plus a Playwright smoke test for the draw flow, freezes, and full ride restart.
-- Debug frames: [loop](shots/loop.jpg), [banked turn](shots/turn.jpg).
+A stroke is deduped, smoothed with Chaikin, resampled every two world units, and mapped into the valley. The points become a centripetal Catmull-Rom spline; arc-length sampling and a planar frame keep a loop smooth. Speed comes from energy with a minimum speed so loops complete, then the camera adds look-ahead, FOV, and horizon lock. Everything is generated in code.
 
-## Development
+The math and the reasons behind it are in [docs/design.md](docs/design.md).
 
-```bash
-npm run verify
-npm run dev
-```
+## Tests
 
-`npm run verify` runs the format check, lint, unit tests, and build. Use `npm run dev` and browse or your own browser for local visual checks. `npm run test` runs the Playwright smoke test in CI. It launches headless Chromium with software WebGL, so a local run can heat a laptop; the config caps it at one worker. `npm run test:unit` runs the pure stroke and track tests with `node --test`. `npm run test:ui` opens the interactive runner. `npm run format` rewrites the files with Prettier. The production build uses the `/papercoaster/` base for GitHub Pages.
+`npm run verify` covers format, lint, unit tests, and build; `npm run test` runs the Playwright smoke test for the draw flow, freezes, and full ride restart.
 
-If you do need Playwright locally, install Chromium once with `npx playwright install chromium`.
-
-## Deploy
-
-Pushes to `main` run CI and deploy `dist/` to GitHub Pages through `.github/workflows/deploy.yml`. The live URL is https://jimmerioles.github.io/papercoaster/.
-
-## Handoff
-
-- **Agents:** read [`AGENTS.md`](AGENTS.md) first. It has the run, verify, feel rules, and architecture map.
-- **Design:** [`docs/design.md`](docs/design.md) has the camera, track, stroke, world, and drawing-layer notes.
-- **Next:** [`docs/next.md`](docs/next.md) has what landed and the next milestones.
-- **Tests:** [`tests/smoke.spec.js`](tests/smoke.spec.js) is the CI browser smoke test, [`test/stroke.test.js`](test/stroke.test.js) covers the stroke pipeline, and [`test/track.test.js`](test/track.test.js) covers track frames and dispose.
-- **Release:** [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md) is the feel-test release note.
-
-## Known rough edges
+## Good to know
 
 - A reload does not reconstruct a drawn stroke. Sharing is the next milestone.
 - Background tabs throttle the ride.
-- A side-view track has no banked turns. A depth input can add them later.
-- The Playwright smoke test covers the draw flow and the freeze views. The visual composition still needs manual QA.
+- A side-view line has no banked turns. Depth input is the next step.
 
-## Tech
+## Credits and license
 
-- three.js 0.187
-- Vite 8
-- Playwright for the CI browser smoke test
-- Plain JavaScript, no framework
-- No external assets. Textures and geometry are generated in code.
-
-## License
-
-MIT.
+Built by [Jim Merioles](https://github.com/jimmerioles) with three.js and Vite. MIT licensed, see [LICENSE](LICENSE).

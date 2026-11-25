@@ -5,6 +5,9 @@ node_modules/
 dist/
 dist-ssr/
 
+# Local explainer production assets
+video/
+
 # Local cache
 .vite/
 *.local
