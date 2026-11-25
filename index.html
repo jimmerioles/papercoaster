@@ -34,6 +34,23 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23fff7eb'/%3E%3Cpath d='M10 46c8-20 16-26 24-14s12 6 20-12' fill='none' stroke='%23e85d3f' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E"
     />
+    <script>
+      if (window.location.hash.replace(/\/+$/, '') === '#/case-study') {
+        document.documentElement.classList.add('case-study-route');
+      }
+    </script>
+    <style>
+      html.case-study-route,
+      html.case-study-route body {
+        overflow: auto;
+        background: #fff7eb;
+      }
+
+      html.case-study-route #ui,
+      html.case-study-route #app {
+        display: none;
+      }
+    </style>
     <title>Papercoaster</title>
   </head>
   <body>
@@ -50,6 +67,12 @@
           <p class="tagline">Draw a line. Ride it.</p>
           <button id="start-button" class="primary-button" type="button">Draw a line</button>
           <p class="note">One stroke becomes the track. No two lines the same.</p>
+          <a class="case-study-link" href="#/case-study" data-case-study-link>
+            Read the case study
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" />
+            </svg>
+          </a>
         </div>
       </section>
 
@@ -107,6 +130,12 @@
             <button id="redraw-button" class="secondary-button" type="button">Redraw</button>
             <button id="again-button" class="primary-button" type="button">Ride again</button>
           </div>
+          <a class="case-study-link case-study-link--end" href="#/case-study" data-case-study-link>
+            Read the case study
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" />
+            </svg>
+          </a>
         </div>
       </section>
 
@@ -120,6 +149,8 @@
         <span id="mute-icon">Sound on</span>
       </button>
     </div>
+
+    <div id="case-study" hidden></div>
 
     <script type="module" src="/src/main.js"></script>
   </body>

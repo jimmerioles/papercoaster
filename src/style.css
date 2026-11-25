@@ -15,6 +15,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -224,6 +228,49 @@ button {
   color: var(--ink-faint);
   font-size: 12px;
   letter-spacing: 0.02em;
+}
+
+.case-study-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(47, 79, 79, 0.18);
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.case-study-link svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.case-study-link:hover {
+  border-color: var(--coral-deep);
+  color: var(--coral-deep);
+}
+
+.case-study-link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.case-study-link--end {
+  margin-top: 20px;
 }
 
 .stats {

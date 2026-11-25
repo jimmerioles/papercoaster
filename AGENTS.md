@@ -12,9 +12,10 @@ Read `README.md` for the product and commands. Read `docs/design.md` before chan
 2. `npm run verify`
 3. `npm run dev`
 4. Draw a line, ride it, then check the four `?t` views below for the test track
-5. Read `docs/next.md` for the remaining milestones
+5. Open http://localhost:5173/#/case-study and check the page at desktop and phone widths
+6. Read `docs/next.md` for the remaining milestones
 
-Done when `verify` passes, CI's browser test passes, and the four views look right. Use browse or your own browser for local visual checks. Do not run the full Playwright suite on a laptop unless you need to.
+Done when `verify` passes, CI's browser test passes, the four views look right, and the case study holds up at both widths. Use browse or your own browser for local visual checks. Do not run the full Playwright suite on a laptop unless you need to.
 
 ## Run and verify
 
@@ -29,7 +30,7 @@ Done when `verify` passes, CI's browser test passes, and the four views look rig
   - Loop: `?t=0.48` is upside down. The track stays coral.
   - Turn: `?t=0.66` banks into the turn.
 - The console should be clean. The favicon is inline, so a favicon 404 means the HTML regressed.
-- The smoke test covers the intro, the draw screen, a rejected short stroke, Clear, a single stroke lock, a resize, a drawn ride, a drawn freeze, the test-track freeze views, end screen focus, and the full ride restart. The visual composition is still checked by eye.
+- The smoke test covers the intro, the draw screen, a rejected short stroke, Clear, a single stroke lock, a resize, a drawn ride, a drawn freeze, the test-track freeze views, end screen focus, the full ride restart, the case study route, and the return to the ride. The visual composition is still checked by eye.
 
 The ride runs at full speed only in an active tab. Background tabs throttle `requestAnimationFrame`. Use the `?t` freezes for layout checks and a foreground tab for feel checks. A reload cannot reconstruct a drawn stroke, so `?t` on load uses the test track.
 
@@ -52,15 +53,20 @@ The ride is a spline plus a speed model, not a physics simulation. Keep the came
 
 ## Architecture map
 
-- `src/main.js`: renderer, scene, UI wiring, state machine, ride loop, audio, reduced motion, debug freeze.
+- `src/main.js`: hash router. Loads the app or the case study on demand, manages the document title, scroll, and focus, and keeps the 3D scene out of the case study route.
+- `src/app.js`: renderer, scene, UI wiring, state machine, ride loop, audio, reduced motion, debug freeze.
+- `src/case-study.js`: case study content, data, and scroll/focus behavior.
+- `src/case-study/case-study.css`: case study layout, paper texture, tables, video, responsive rules, print.
+- `src/case-study/images/`: optimized WebP screenshots for the case study.
 - `src/track.js`: data-driven track, `TEST_TRACK_POINTS` and `createTestTrack()`, arc-length sampling, planar and parallel-transport frames, banking, ribbon, ties, rails, start band, `dispose()`.
 - `src/stroke.js`: pure stroke pipeline, no DOM. Dedupe, Chaikin smoothing, resampling, rejection reasons, side-view to world mapping.
 - `src/draw.js`: draw overlay canvas, pointer capture, single stroke rule, coral preview.
 - `src/ride.js`: energy speed model, camera rig, FOV, comfort mode, idle bob, freeze.
 - `src/world.js`: sky, sun, mountain rings, river, forest, clouds, start flag, lights.
-- `src/style.css`: intro card, draw screen, HUD, progress bar, end screen, responsive layout, reduced motion.
+- `src/style.css`: intro card, draw screen, HUD, progress bar, end screen, case study link, responsive layout, reduced motion.
+- `public/ride.mp4`: the 21-second case study clip. The full explainer stays in the ignored `video/` folder.
 - `playwright.config.js`: browser test config and dev server.
-- `tests/smoke.spec.js`: the draw flow, freezes, and the full ride restart.
+- `tests/smoke.spec.js`: the draw flow, freezes, case study route, and the full ride restart.
 - `test/stroke.test.js`: pure unit tests for `src/stroke.js`.
 - `test/track.test.js`: unit tests for track frames, planar loops, and dispose.
 - `docs/design.md`: the math and the reasons behind it.
@@ -71,8 +77,9 @@ Track frames use parallel transport for tracks with depth, because Frenet twists
 ## Conventions
 
 - Plain JavaScript, ES modules, two-space indentation, no framework.
-- Generate textures and geometry in code. The app ships with no external assets.
+- Generate textures and geometry in code. The app ships with no external assets. The case study images and the ride clip are the only bundled media.
 - Keep it a single-page Vite app with no backend and no login.
+- Keep the case study on the `#/case-study` hash route. A direct load must not start the 3D scene; the app loads only when the visitor returns to the ride.
 - Use `?t=` freezes for visual checks. They hide the UI.
 - A drawn track is planar. Keep its frame in-plane with zero bank until a depth input lands.
 - Update the Playwright smoke test and the unit tests when a user-visible flow or the stroke rules change.

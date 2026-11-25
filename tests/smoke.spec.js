@@ -138,6 +138,37 @@ test('freezes at the drop, loop, and turn with the UI hidden', async ({ page }) 
   }
 });
 
+test('opens the case study from the intro and returns to the ride', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#app canvas')).toBeVisible();
+
+  await page.locator('[data-case-study-link]').first().click();
+
+  await expect(page.locator('#case-study')).toBeVisible();
+  await expect(page.locator('#case-study h1')).toContainText('Draw the line');
+  await expect(page.locator('#case-study h1')).toContainText('Feel the drop');
+  await expect(page.locator('#ui')).toBeHidden();
+  await expect(page.locator('#start-screen')).toBeHidden();
+  await expect(page).toHaveTitle('Papercoaster case study · Draw the line. Feel the drop.');
+
+  await page.getByRole('button', { name: 'Read the build notes' }).click();
+  await expect(page.locator('#how-title')).toBeFocused();
+
+  await page.locator('#case-study .cs-topbar .cs-back').click();
+
+  await expect(page.locator('#case-study')).toBeHidden();
+  await expect(page.locator('#start-screen')).toBeVisible();
+  await expect(page.locator('[data-case-study-link]').first()).toBeFocused();
+});
+
+test('opens the case study directly without starting the 3D scene', async ({ page }) => {
+  await page.goto('/#/case-study');
+
+  await expect(page.locator('#case-study h1')).toContainText('Draw the line');
+  await expect(page.locator('#app canvas')).toHaveCount(0);
+  await expect(page.locator('#ui')).toBeHidden();
+});
+
 test('freezes a drawn track in the same session', async ({ page }) => {
   await page.goto('/');
   await openDrawScreen(page);

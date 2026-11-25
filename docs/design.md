@@ -62,6 +62,14 @@ The drawing layer covers steps 1 to 3. Sharing is a later milestone.
 - Fog is `FogExp2(0xffd3a3, 0.0015)`. The paper layers stay crisp, then fade into the sky.
 - The UI is a cream card with a serif title, a coral button, a speed pill, a progress bar, and a mute control. The draw screen is ruled paper with a coral stroke and a cream tool card.
 
+## The case study
+
+`#/case-study` is a separate document route inside the same build. `src/main.js` reads the hash and loads either `src/app.js` or `src/case-study.js` on demand, so a direct case study load never creates a WebGL context. The route hides the app UI, swaps the title, scrolls to the top, and moves focus to the case study main. Returning to `#/` starts the app if it is not running, or unpauses it if it is.
+
+The case study uses five WebP stills from `shots/`, a ride poster pulled from the clip, and a 21-second MP4 cut from the ride capture. The full 3:56 explainer stays in the ignored `video/` folder. The page uses the app palette: cream paper, coral accent, teal ink, the system serif display stack, and a monospace label stack. It is responsive and print-friendly.
+
+The page has one h1, numbered sections, semantic tables and lists, a skip link, a labelled video, and visible focus. The "Read the build notes" and "Read the shot list" controls scroll to a heading and focus it. `prefers-reduced-motion` switches smooth scroll to instant. The case study is content, not a second app, so it stays plain HTML and CSS in one template.
+
 ## The drawing layer
 
 `src/draw.js` owns the screen. `src/stroke.js` owns the math and has no DOM access.
@@ -82,13 +90,13 @@ The drawing layer covers steps 1 to 3. Sharing is a later milestone.
 
 The local gate is `npm run verify` (format, lint, `node --test`, build). CI runs format, lint, unit tests, build, and `npm run test` (Playwright) on GitHub runners. Browse or a normal browser window is the preferred local browser check because headless Chromium uses software WebGL and can heat a laptop. The Playwright config stays at one worker.
 
-The unit tests cover the stroke pipeline, its rejection rules, the planar frame contract, and `Track.dispose()`. The smoke test covers the intro, the draw screen, a rejected short stroke, Clear, the single stroke lock, a resize, a drawn ride, the speed HUD, the progress bar, a same-session drawn freeze, the three test-track freeze views, the end screen focus, and the full ride restart with R. It fails on any page error or console error in every test.
+The unit tests cover the stroke pipeline, its rejection rules, the planar frame contract, and `Track.dispose()`. The smoke test covers the intro, the draw screen, a rejected short stroke, Clear, the single stroke lock, a resize, a drawn ride, the speed HUD, the progress bar, a same-session drawn freeze, the three test-track freeze views, the end screen focus, and the full ride restart with R. It also opens the case study from the intro, checks the direct `#/case-study` load has no canvas, and returns to the ride with focus on the case study link. It fails on any page error or console error in every test.
 
 The visual composition is still checked by eye with the `?t` freezes and with drawn loop freezes. Background tabs throttle animation, so the ride feel must be checked in a foreground tab. The test-track freezes stay available through `?t=` after reload.
 
 ## Constraints
 
-- Single-page Vite app. No backend, no login, no external assets.
+- Single-page Vite app. No backend, no login. The app has no external assets. The case study adds six WebP images and one short ride clip.
 - The ride is a spline plus a speed model. No physics engine.
 - The build, lint, format, unit test, and Playwright smoke test are the automated gates. The visual composition is still manual.
 - The app works on a laptop trackpad and on a touch screen. The ride is automatic; drawing is the only input.

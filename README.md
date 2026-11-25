@@ -10,6 +10,8 @@ A three.js paper coaster: one stroke becomes a rollercoaster through a paper dio
 
 **Live demo:** https://jimmerioles.github.io/papercoaster/
 
+**Case study:** https://jimmerioles.github.io/papercoaster/#/case-study
+
 https://github.com/user-attachments/assets/aa538ce5-5967-4c88-8f70-0f924ac8636f
 
 Papercoaster is for anyone who has doodled a coaster in the margin and wondered how it would feel. There is no track editor: you draw one line, and the app turns it into a track with a drop, loop, or flat run. The whole world is generated in code, so the only asset is your stroke.
@@ -58,6 +60,7 @@ The math and the reasons behind it are in [docs/design.md](docs/design.md).
 ## Good to know
 
 - A reload does not reconstruct a drawn stroke. Sharing is the next milestone.
+- The case study at `#/case-study` is a separate route. It does not start the 3D scene until you return to the ride.
 - Background tabs throttle the ride.
 - A side-view line has no banked turns. Depth input is the next step.
 

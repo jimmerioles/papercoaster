@@ -1,6 +1,6 @@
 # Milestone: the drawing layer
 
-**Status:** landed on `feat/drawing-layer`, awaiting review. The next milestone is the thrill score and sharing.
+**Status:** landed on `feat/drawing-layer`, awaiting review. The case study route is also live. The next milestone is the thrill score and sharing.
 
 ## Goal
 
@@ -38,6 +38,12 @@ Replace the fixed test track with a track drawn in one stroke, while keeping the
 - A rejected stroke stays visible with Clear enabled and a "Clear to try again" message, so the player can see what failed. A valid stroke locks further pointer input until Clear. Pointer cancel and lost capture discard the stroke. Window resize rescales the stored points and rechecks the result.
 - Focus moves to the draw region when it opens and to the end screen primary action when a ride finishes.
 - The start card is the intro. The test track has no user-facing button. `?t=` still bypasses the intro and shows the test track, because a reload has no stroke to rebuild.
+
+## The case study
+
+The `#/case-study` route is live. It covers the problem, the walkthrough, the four build decisions, the frame table, the constants, the accessibility story, the limits, and the next milestones. It uses five WebP stills, a ride poster, and a 21-second ride clip. The full explainer stays in the ignored `video/` folder.
+
+The route loads on demand. A direct visit does not start the 3D scene. Returning to `#/` starts it, or unpauses it if it was already running.
 
 ## Next
 
